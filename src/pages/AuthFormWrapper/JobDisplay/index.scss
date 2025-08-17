@@ -1,0 +1,68 @@
+.job-display {
+  padding: 40px;
+  background-image: url("../../../components/Law Firm Website in Gold Blue Sleek Corporate Style (5).png");
+
+  .job-title {
+    margin-bottom: 60px;
+    color: #2a2d58;
+    font-size: 40px;
+    text-align: center;
+  }
+
+  .job-list-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 10vh;
+    margin-left: 350px;
+  }
+}
+
+.job-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  margin: 0;
+  position: relative;
+
+  &.hover {
+    border: 2px solid #1890ff;
+  }
+
+  .job-city {
+    color: #666;
+  }
+
+  .job-info {
+    font-size: 15px;
+    line-height: 22px;
+
+    .job-table {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+
+      .table-header {
+        color: gray;
+        font-size: 13px;
+      }
+
+      .table-cell {
+        color: black;
+        font-weight: bold;
+
+        .amount {
+          color: orange;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+
+  .job-button {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+  }
+}
