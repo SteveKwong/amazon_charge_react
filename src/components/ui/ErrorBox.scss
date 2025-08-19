@@ -1,0 +1,36 @@
+.error-box {
+  border: 1px solid red;
+  border-radius: 8px;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  color: #333;
+
+  .error-icon {
+    color: red;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .error-content {
+    .error-title {
+      color: red;
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
+    .error-message {
+      color: #333;
+      margin: 0.5rem 0 0;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      font-weight: bold;
+    }
+  }
+}

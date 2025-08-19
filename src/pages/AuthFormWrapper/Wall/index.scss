@@ -1,0 +1,43 @@
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+.background-container {
+    height: 100vh;
+    width: 100%;
+    //position: absolute; /* 改为固定位置 */
+    //background-image: url('https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2767030/extras/1.A_Deep_and_vaired.gif?t=1733904276');
+    //background-image: url('https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2767030/extras/1.A_Deep_and_vaired.gif?t=1733904276');
+    background-image: url('../../../components/Law Firm Website in Gold Blue Sleek Corporate Style (3).png');
+    background-size: cover;
+
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-attachment: scroll;
+}
+.wall-button{
+    position: absolute;  // 固定在屏幕上
+    left: 12%;      // 距离左边 20px
+    bottom: 26%;    // 距离底部 20px
+    zIndex: 1000  ;       // 保证在最上层
+}
+.order-btn {
+    width: 300px;
+    height: 100px;
+    background-color: #c19a6b;
+    color: #2a2d58;
+    font-weight: bold;
+    font-size: 30px;
+    font-family: "Microsoft YaHei";
+
+    // 你可以加一些 hover 效果
+    &:hover {
+        background-color: #b5895a;
+        color: #fff;
+    }
+}
