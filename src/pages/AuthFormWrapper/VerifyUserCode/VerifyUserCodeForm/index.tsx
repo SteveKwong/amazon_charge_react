@@ -1,11 +1,12 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Form, Input, Button, Typography} from 'antd';
 import {OTPProps} from 'antd/es/input/OTP';
 import './index.scss';
 import ErrorBox from "@/components/ui/ErrorBoxProps";
-import {getRequest} from "@/components/network/api";
-import navigate from "@/pages/Navigate";
+import {getRequest, postRequest} from "@/components/network/api";
 import {useNavigate} from "react-router-dom";
+// import { formatDate, randomId } from '@/common/CommonUtils';
+import {getInputPattern} from '@/commmon/CommonUtils'
 
 interface VerifyUserCodeFormProps {
     username: string;
@@ -17,34 +18,48 @@ const {Title} = Typography;
 const VerifyUserCodeForm: React.FC<VerifyUserCodeFormProps> = ({username, verificationCodeType}) => {
     const [loading, setLoading] = useState<boolean>(false);
     const [otp, setOtp] = useState<string>("");
-    const [countdown, setCountdown] = useState(60);
-    const [isCooldown, setIsCooldown] = useState(false);
     const [error, setError] = useState<string>("");
     const navigate = useNavigate();
-    // coolDownVCSend method
+
+    const [isCooldown, setIsCooldown] = useState(true);
+    const [countdown, setCountdown] = useState(60);
+    const timerRef = useRef(null);
+
+    // 页面加载时就启动倒计时
+    useEffect(() => {
+        if (isCooldown) {
+            // @ts-ignore
+            timerRef.current = setInterval(() => {
+                setCountdown((prev) => {
+                    if (prev === 1) {
+                        // @ts-ignore
+                        clearInterval(timerRef.current);
+                        setIsCooldown(false);
+                        return 60; // 复位，下次点击才会重新开始
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+// @ts-ignore
+        return () => clearInterval(timerRef.current);
+    }, [isCooldown]);
+
+    // 用户点击“重新发送验证码”
     const coolDownVCSend = () => {
-        setIsCooldown(true); // Start cooldown
-        // Start countdown
-        const timer = setInterval(() => {
-            setCountdown((prevCountdown) => {
-                if (prevCountdown === 1) {
-                    clearInterval(timer); // Stop countdown
-                    setIsCooldown(false); // Reset cooldown state
-                    return 60; // Reset countdown to 60 for the next click
-                }
-                return prevCountdown - 1;
-            });
-        }, 1000);
+        if (isCooldown) return; // 冷却中就不触发
+        setIsCooldown(true);
+        setCountdown(60);
     };
 
     // 跳转到 resetUserCode 页面并携带参数
     const navigateToRestUserCode = (username: string) => {
-        navigate('/resetusercode', {state: {username}});
+        navigate('/reset-password', {state: {username}});
     };
 
 
     // 掩码处理函数
-    const maskedUsername = () => {
+    const maskedUsername = (username: string) => {
         if (verificationCodeType === 'email') {
             // 如果是邮箱，掩盖@之前的部分
             const emailParts = username.split('@');
@@ -69,19 +84,29 @@ const VerifyUserCodeForm: React.FC<VerifyUserCodeFormProps> = ({username, verifi
     };
 
     const handleSubmit = async () => {
+
+        const inputPattern = getInputPattern(username);
+
+        // 构造请求参数
+        const requestData  = {
+            [inputPattern]: username,
+            sms_code: otp
+        };
         // 校验 OTP 和 verificationCode 是否一致
         if (otp) {
             // 发送axios请求比对验证码
             try {
-                const response = await getRequest(
-                    "/verifyCode",
-                    {username, otp},
+                const response = await postRequest(
+                    "/portal/forgetPassword",
+                    {[inputPattern]: username,sms_code: otp},
                     false
                 );
-                /**
-                 * json格式=> {"username";"codeCorrect"}
-                 */
-                if (response.data.codeCorrect === false) {
+
+                if (response.status === 500) {
+                    setError(response.msg);
+                }
+
+                if (response.result === false) {
                     setError("*验证码有误,请重新尝试");
                     return;
                 } else {
@@ -119,8 +144,8 @@ const VerifyUserCodeForm: React.FC<VerifyUserCodeFormProps> = ({username, verifi
                 )}
                 <Title level={5}>
                     为了安全起见，我们已将验证码发送至
-                    {verificationCodeType === 'email' ? '电子邮件：' : '手机：176****8456'}
-                    {maskedUsername()}
+                    {verificationCodeType === 'email' ? '邮箱：' : '手机：'}
+                    {maskedUsername(username)}
                 </Title>
                 <Form.Item
                     label="请输入验证码"
@@ -145,7 +170,7 @@ const VerifyUserCodeForm: React.FC<VerifyUserCodeFormProps> = ({username, verifi
                         pointerEvents: isCooldown ? 'none' : 'auto', // Disable click during cooldown
                     }}
                 >
-                    {isCooldown ? `後で${countdown}秒送信できます。` : 'コードを再送信する'}
+                    {isCooldown ? `还有${countdown}秒可以发送` : '再次发送验证码'}
                 </a>
                 <br/>
                 <div className="button-container">

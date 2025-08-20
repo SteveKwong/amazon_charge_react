@@ -4,10 +4,13 @@
   /* 针对可能的 body 和 html 限制，强制高度 */
   position: relative;
   z-index: 0;
+  margin-right: 30%;
+  margin-top: 10%;
 .error{
   color: red;
 }
   form {
+
     background: white;
     padding: 2rem;
     border-radius: 8px;

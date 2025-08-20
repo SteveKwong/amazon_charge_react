@@ -5,11 +5,12 @@ import MyFooter from "@/pages/AuthFormWrapper/Footer";
 import RegisterForm from "@/pages/AuthFormWrapper/Register/RegisterForm";
 import {Spin} from "antd";
 import LoginForm from "@/pages/AuthFormWrapper/Login/LoginForm";
+import ResetSuccessForm from "@/pages/AuthFormWrapper/ResetSuccess/ResetSuccessForm";
 
 
-const RegisterPage: React.FC = () => {
+const ResetSuccessPage: React.FC = () => {
 
-    //
+
     const [pageLoading, setPageLoading] = useState(true);
 
     useEffect(() => {
@@ -32,7 +33,7 @@ const RegisterPage: React.FC = () => {
                 <>
                     <Navigate/>
                     <Wall>
-                        <RegisterForm/>
+                        <ResetSuccessForm/>
                     </Wall>
                     <MyFooter/>
                 </>
@@ -41,4 +42,4 @@ const RegisterPage: React.FC = () => {
     );
 };
 
-export default RegisterPage;
+export default ResetSuccessPage;

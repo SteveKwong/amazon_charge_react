@@ -129,7 +129,7 @@ const LoginForm: React.FC = () => {
 
                 <br />
                 <div>
-                    <Link href="/forgetpassword">忘记了您的密码?</Link>
+                    <Link href="/forget-password">忘记了您的密码?</Link>
                 </div>
                 <br />
                 <div>

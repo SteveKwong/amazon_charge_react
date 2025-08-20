@@ -85,7 +85,6 @@ const RegisterForm = () => {
      */
     function changeButtonContent() {
         if (username.match(emailPattern)) {
-            console.log(username)
             setButtonContent("邮箱确认")
         } else if (username.match(phonePattern)) {
             setButtonContent("手机号确认")

@@ -5,6 +5,10 @@ import './index.scss';
 import ErrorBox from "@/components/ui/ErrorBoxProps";
 import {Simulate} from "react-dom/test-utils";
 import error = Simulate.error;
+import {postRequest} from "@/components/network/api";
+import navigate from "@/pages/Navigate";
+import {getInputPattern} from "@/commmon/CommonUtils";
+import {useNavigate} from "react-router-dom";
 
 interface VerifyUserCodeFormProps {
     username: string;
@@ -18,21 +22,37 @@ const ResetPasswordForm: React.FC<VerifyUserCodeFormProps> = ({username}) => {
     const [error, setError] = useState<string>("");
     const [password1, setPassword1] = useState<string>("");
     const [password2, setPassword2] = useState<string>("");
-
+    const navigate = useNavigate();
 
     /**
      * 进行密码的重置
      */
-    const handleSubmit = () => {
-        if (password1===password2){
-            setError("")
-            console.log(password1)
-            console.log(password2)
-            return;
-        }else {
+    const handleSubmit = async () => {
+        if (password1 === password2) {
+            // 提交密码重置的代码
+            setLoading(true);
+            try {
+                // 在提交前先进行自定义的正则校验
+                const inputPattern = getInputPattern(username);
+                const response = await postRequest(
+                    "/portal/resetPassword",
+                    {[inputPattern]: username, password: password1},
+                    false
+                );
+                if (response.result === false) {
+                    setError("*密码更新失败,请稍后再试");
+                } else if (response.result === true) {
+                    navigate("/reset-success");
+                }
+            } catch (err) {
+                setError("*出现问题,请稍后再试");
+
+            } finally {
+                setLoading(false);
+            }
+
+        } else {
             setError("两次密码不匹配请重试")
-            console.log(password1)
-            console.log(password2)
             return;
         }
     };

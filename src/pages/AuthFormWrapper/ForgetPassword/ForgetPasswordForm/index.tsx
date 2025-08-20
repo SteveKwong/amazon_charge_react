@@ -5,6 +5,7 @@ import {useNavigate} from "react-router-dom";
 import {getRequest, postRequest} from "@/components/network/api";
 import ErrorBox from "@/components/ui/ErrorBoxProps";
 import getFontSizes from "antd/es/theme/themes/shared/genFontSizes";
+import {getInputPattern} from '@/commmon/CommonUtils'
 
 const ForgetPasswordForm: React.FC = () => {
     const [username, setUsername] = useState<string>("");
@@ -18,11 +19,9 @@ const ForgetPasswordForm: React.FC = () => {
 
 
     // 跳转到 VerifyUserCode 页面并携带参数
-    const navigateToVerifyUserCode = (username: string, verificationCode: string, verificationCodeType: string) => {
-        navigate('/verify-user-code', {state: {username, verificationCode, verificationCodeType}});
+    const navigateToVerifyUserCode = (username: string, verificationCodeType: string) => {
+        navigate('/verify-user-code', {state: {username, verificationCodeType}});
     };
-
-
 
 
     const handleLogin = async () => {
@@ -36,11 +35,11 @@ const ForgetPasswordForm: React.FC = () => {
 
         // 判断类型
         let params: Record<string, string> = {};
-
         // 在提交前先进行自定义的正则校验
-        if (emailPattern.test(username)) {
+        const inputPattern = getInputPattern(username);
+        if (inputPattern === 'email') {
             params = {emailNum: username};
-        } else if (phonePattern.test(username)) {
+        } else if (inputPattern === 'phone') {
             params = {phoneNum: username};
         } else {
             setError("* 用户名格式不正确，请输入有效的邮箱或手机号");
@@ -55,17 +54,17 @@ const ForgetPasswordForm: React.FC = () => {
                 params,
                 false
             );
-
-            if (response.result === false || response.code === 500) {
-                setError("* 抱歉,出现了问题,请点击重试或检验您的输入是否有误");
+            // 校验+用户信息未查到
+            if (response.code === 500) {
+                setError(response.msg);
+                return;
+            }
+            if (response.result === false) {
+                setError("出现了额外的问题,请您重新输入");
                 return;
             } else {
-                // 获取验证码
-                const verificationCode = '123';
-                // 验证码类型
-                const verificationCodeType = '321';
                 // 调用跳转方法并传递参数
-                navigateToVerifyUserCode(username, verificationCode, verificationCodeType);
+                navigateToVerifyUserCode(username, inputPattern);
             }
 
         } catch (err) {
@@ -113,8 +112,10 @@ const ForgetPasswordForm: React.FC = () => {
                         type="primary"
                         htmlType="submit"
                         loading={loading}
-                        style={{backgroundColor: 'yellow',
-                            color: '#333'}}
+                        style={{
+                            backgroundColor: 'yellow',
+                            color: '#333'
+                        }}
                     >
                         {"继续"}
                     </Button>

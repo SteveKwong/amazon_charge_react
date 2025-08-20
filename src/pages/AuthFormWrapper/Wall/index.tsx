@@ -4,6 +4,8 @@ import Navigate from "@/pages/Navigate";
 import {Button} from "antd";
 import {useNavigate} from "react-router-dom";
 import JobDisplay from "@/pages/AuthFormWrapper/JobDisplay/index";
+import wallpaper from "../../../components/Law Firm Website in Gold Blue Sleek Corporate Style (3).png";
+
 
 interface BackgroundProps {
     children?: React.ReactNode;
@@ -16,7 +18,11 @@ const Wall: React.FC<BackgroundProps> = ({children}) => {
 
             {/*壁纸*/}
             <div className="background-container">
-
+                <img
+                    src={wallpaper}
+                    // alt="wallpaper"
+                    className="bg"
+                />
                 <div className="wall-button">
                     <Button
                         className="order-btn"

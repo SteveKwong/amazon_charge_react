@@ -8,7 +8,7 @@ import VerifyUserCodePage from "@/pages/AuthFormWrapper/VerifyUserCode/VerifyUse
 import ResetPasswordPage from "@/pages/AuthFormWrapper/ResetPassword/ResetPasswordPage";
 import NotExist from "@/pages/NotExist";
 import RegisterPage from "@/pages/AuthFormWrapper/Register/RegisterPage";
-
+import ResetSuccessPage from "@/pages/AuthFormWrapper/ResetSuccess/ResetSuccessPage";
 
 
 const AppRouter = () => (
@@ -19,10 +19,11 @@ const AppRouter = () => (
             <Route path="/home" element={<Home/>}/>
             <Route path="/" element={<LoginPage/>}/>
             <Route path="/wall" element={<Wall/>}/>
-            <Route path="/forgetpassword" element={<ForgetPasswordPage/>}/>
-            <Route path="/verifycode" element={<VerifyUserCodePage/>}/>
-            <Route path="/resetpassword" element={<ResetPasswordPage/>}/>
+            <Route path="/forget-password" element={<ForgetPasswordPage/>}/>
+            <Route path="/verify-user-code" element={<VerifyUserCodePage/>}/>
+            <Route path="/reset-password" element={<ResetPasswordPage/>}/>
             <Route path="/register" element={<RegisterPage/>}/>
+            <Route path="/reset-success" element={<ResetSuccessPage/>}/>
         </Routes>
     </Router>
 );
