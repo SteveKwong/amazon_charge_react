@@ -1,6 +1,5 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import './index.scss'
-import Navigate from "@/pages/Navigate";
 import {Button} from "antd";
 import {useNavigate} from "react-router-dom";
 import JobDisplay from "@/pages/AuthFormWrapper/JobDisplay/index";
@@ -13,12 +12,12 @@ interface BackgroundProps {
 
 const Wall: React.FC<BackgroundProps> = ({children}) => {
     const navigate = useNavigate()
+
     return (
         <div>
-
             {/*壁纸*/}
             <div className="background-container">
-                <img
+            <img
                     src={wallpaper}
                     // alt="wallpaper"
                     className="bg"

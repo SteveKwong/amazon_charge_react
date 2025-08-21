@@ -7,7 +7,8 @@ html, body {
 
 .background-container {
   position: relative;
-  min-height: 100vh;
+  //相对于根元素的大小
+  min-height: 60rem;
   width: 100%;
   display: flex;
   flex-direction: column;

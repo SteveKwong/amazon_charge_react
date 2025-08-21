@@ -5,7 +5,7 @@
     background-color: #fef9f3;
     background-size: cover;
     background-position: top center; /* 确保图片从顶部开始 */
-    height: 55px; /* 设置背景图片区域的高度 */
+    height: 3vw; /* 设置背景图片区域的高度 */
     position: absolute; /* 改为固定位置 */
     top: 0; /* 固定在视口顶部 */
     left: 0; /* 从左侧开始 */
@@ -14,8 +14,8 @@
 
 /* logo 样式 */
 .logo-image {
-    margin-top: 27px;
-    margin-left: 70px;
+    margin-top: 2%;
+    margin-left: 2%;
     height: 40px;
     object-fit: contain;
     top: 12px; /* 确保 logo 和 header 对齐 */
@@ -26,6 +26,8 @@
 
 .account-number{
     left: -100px; /* 从左侧开始 */
+    font-size: 22%; /* 使用 px，固定大小 */
+
 }
 /* 导航栏样式 */
 .site-header {
