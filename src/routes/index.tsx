@@ -1,6 +1,5 @@
 import React from "react";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
-import Home from '@/pages/Home';
 import Wall from "@/pages/AuthFormWrapper/Wall";
 import LoginPage from "@/pages/AuthFormWrapper/Login/LoginPage";
 import ForgetPasswordPage from "@/pages/AuthFormWrapper/ForgetPassword/ForgetPasswordPage";
@@ -10,6 +9,7 @@ import NotExist from "@/pages/NotExist";
 import RegisterPage from "@/pages/AuthFormWrapper/Register/RegisterPage";
 import ResetSuccessPage from "@/pages/AuthFormWrapper/ResetSuccess/ResetSuccessPage";
 import LoginByPhone from "@/pages/AuthFormWrapper/LoginByPhone/LoginByPhonePage";
+import Dashboard from "@/pages/Home/dashboard/Dashboard";
 
 
 const AppRouter = () => (
@@ -17,7 +17,7 @@ const AppRouter = () => (
         <Routes>
             <Route path="*" element={<NotExist/>}/> {/* 捕获所有其他路径 */}
             <Route path="/login" element={<LoginPage/>}/>
-            <Route path="/home" element={<Home/>}/>
+            <Route path="/home" element={<Dashboard/>}/>
             <Route path="/" element={<LoginPage/>}/>
             <Route path="/wall" element={<Wall/>}/>
             <Route path="/forget-password" element={<ForgetPasswordPage/>}/>

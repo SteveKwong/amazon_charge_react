@@ -27,13 +27,23 @@ const PhoneLoginForm: React.FC = () => {
 
     // 发送验证码
     const handleSendCode = async () => {
-        if (!phonePattern.test(phoneNum)) {
-            message.error('请输入有效的手机号');
+
+        const type = getInputPattern(phoneNum); // 'phone' 或 'email'
+
+        if (type === '格式不正确') {
+            message.error('请输入有效的手机号或者邮箱');
             return;
         }
         setSending(true);
         try {
-            const response = await getRequest(`/portal/sendPhoneDynamicCode/${phoneNum}`);
+            let response;
+            if (type === 'phone') {
+                response = await getRequest(`/portal/sendPhoneDynamicCode/${phoneNum}`);
+            }
+            if (type === 'email') {
+                response = await getRequest(`/portal/sendEmailDynamicCode/${phoneNum}`);
+            }
+
             if (response.code === 200) {
                 message.success(response.msg || '验证码发送成功，请注意查收');
                 setCooldown(60); // 设置60秒冷却
@@ -49,25 +59,39 @@ const PhoneLoginForm: React.FC = () => {
 
     // 登录校验
     const handleLogin = async () => {
+
+        const type = getInputPattern(phoneNum); // 'phone' 或 'email'
+
         if (!phoneNum || !smsCode) {
             message.error('请输入手机号|邮箱和验证码');
             return;
         }
-        if (!phonePattern.test(phoneNum)) {
+
+        if (type === '格式不正确') {
             message.error('请输入有效的手机号|邮箱');
             return;
         }
         setLoading(true);
         try {
-            const response = await postRequest('/portal/phoneDynamicCodeLogin', {
-                    phone: phoneNum,
-                    sms_code: smsCode
-                }
-                , false);
+            let response;
+            if (type === 'phone') {
+                response = await postRequest('/portal/phoneDynamicCodeLogin', {
+                        phone: phoneNum,
+                        sms_code: smsCode
+                    }
+                    , false);
+            }
+            if (type === 'email') {
+                response = await postRequest('/portal/emailDynamicCodeLogin', {
+                        email: phoneNum,
+                        sms_code: smsCode
+                    }
+                    , false);
+            }
             if (response.result?.success && response.result.token) {
                 localStorage.setItem('token', response.result.token);
                 message.success('登录成功');
-                navigate('/home');
+                navigate("/home");
             } else {
                 message.error('登录失败，验证码或手机号|邮箱错误');
             }

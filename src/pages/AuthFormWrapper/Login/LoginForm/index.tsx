@@ -39,7 +39,7 @@ const LoginForm: React.FC = () => {
                 setError("* 用户名或密码错误，请重新输入");
             } else if (result.token) {
                 localStorage.setItem("token", result.token);
-                navigate("/home");
+                navigate("/home",{ replace: true });
             } else {
                 setError("* 出现未知错误，请稍后再试");
             }
