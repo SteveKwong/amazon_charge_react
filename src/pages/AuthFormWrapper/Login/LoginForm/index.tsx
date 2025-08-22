@@ -133,7 +133,7 @@ const LoginForm: React.FC = () => {
                 </div>
                 <br />
                 <div>
-                    <Link href="/loginbyphone">手机号登录</Link>
+                    <Link href="/loginbyphone">手机号/邮箱验证码登录</Link>
                 </div>
             </Form>
         </div>

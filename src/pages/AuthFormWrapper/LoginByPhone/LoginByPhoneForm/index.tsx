@@ -3,6 +3,7 @@ import {Form, Input, Button, message, Typography} from 'antd';
 import './index.scss';
 import {useNavigate} from 'react-router-dom';
 import {getRequest, postRequest} from '@/components/network/api'; // 你原来的请求封装
+import {getInputPattern} from '@/commmon/CommonUtils'
 
 const PhoneLoginForm: React.FC = () => {
     const [phoneNum, setPhoneNum] = useState<string>('');
@@ -49,11 +50,11 @@ const PhoneLoginForm: React.FC = () => {
     // 登录校验
     const handleLogin = async () => {
         if (!phoneNum || !smsCode) {
-            message.error('请输入手机号和验证码');
+            message.error('请输入手机号|邮箱和验证码');
             return;
         }
         if (!phonePattern.test(phoneNum)) {
-            message.error('请输入有效的手机号');
+            message.error('请输入有效的手机号|邮箱');
             return;
         }
         setLoading(true);
@@ -68,7 +69,7 @@ const PhoneLoginForm: React.FC = () => {
                 message.success('登录成功');
                 navigate('/home');
             } else {
-                message.error('登录失败，验证码或手机号错误');
+                message.error('登录失败，验证码或手机号|邮箱错误');
             }
         } catch (err) {
             message.error('登录请求失败，请稍后重试');
@@ -85,12 +86,13 @@ const PhoneLoginForm: React.FC = () => {
                 requiredMark={false}
                 onFinish={handleLogin}
             >
-                <h2>手机号登录</h2>
+                <h2>手机号|邮箱登录</h2>
                 <div className="red-line"/>
 
-                <Form.Item label="手机号" name="phoneNum" rules={[{required: true, message: '请输入手机号'}]}>
+                <Form.Item label="手机号或邮箱(自动识别)" name="phoneNum"
+                           rules={[{required: true, message: '请输入手机号或邮箱'}]}>
                     <Input
-                        placeholder="请输入手机号"
+                        placeholder="请输入手机号或邮箱"
                         value={phoneNum}
                         onChange={e => setPhoneNum(e.target.value)}
                     />
