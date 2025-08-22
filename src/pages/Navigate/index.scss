@@ -1,69 +1,97 @@
-/* Header的背景图片 */
+/* 使用CSS变量方便维护 */
+:root {
+  --header-height: 4rem;
+  --header-bg-color: #fef9f3;
+  --text-color: #000;
+  --logo-size: 2.5rem;
+  --font-size-normal: 1rem;
+  --font-size-large: 1.2rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+}
+
+/* 重置默认样式 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header容器 */
 .header-container {
-    width: 100%;
-    //background-image: url('white'); /* 替换为你的图片路径 */
-    background-color: #fef9f3;
-    background-size: cover;
-    background-position: top center; /* 确保图片从顶部开始 */
-    height: 3vw; /* 设置背景图片区域的高度 */
-    position: absolute; /* 改为固定位置 */
-    top: 0; /* 固定在视口顶部 */
-    left: 0; /* 从左侧开始 */
-    z-index: 1; /* 确保在页面其他内容之上 */
+  width: 100%;
+  height: 42px;
+  background-color: var(--header-bg-color);
+  position: relative;
+  //height: var(--header-height);
+  z-index: 10;
+}
+
+/* 导航栏样式 */
+.site-header {
+  background: transparent;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-md);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* logo 样式 */
+.logo {
+  display: flex;
+  align-items: center;
+}
+
 .logo-image {
-    margin-top: 2%;
-    margin-left: 2%;
-    height: 40px;
-    object-fit: contain;
-    top: 12px; /* 确保 logo 和 header 对齐 */
-    left: 30px;
-    z-index: 2; /* 确保 logo 在 header 上方 */
+  height: var(--logo-size);
+  width: auto;
+  object-fit: contain;
 }
 
-
-.account-number{
-    left: -100px; /* 从左侧开始 */
-    font-size: 22%; /* 使用 px，固定大小 */
-
-}
-/* 导航栏样式 */
-.site-header {
-    background: transparent; /* 确保导航栏背景透明 */
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1; /* 导航栏位于图片上方 */
-    padding: 0 20px;
-    height: 60px; /* 设置导航栏高度 */
-    display: flex;
-    align-items: center; /* 垂直居中对齐 */
-    justify-content: space-between; /* 分散对齐 */
+/* 客服号码样式 */
+.account-number {
+  color: var(--text-color);
+  font-size: var(--font-size-normal);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-
-/* 设置菜单项文字为纯黑色 */
-.ant-menu-item {
-    font-size: 16px;
-    font-weight: bold; /* 粗体 */
-    color: black !important; /* 设置纯黑色字体，确保覆盖其他样式 */
-    border: none; /* 去除菜单项的默认边框 */
+/* 响应式设计 */
+@media (min-width: 768px) {
+  .account-number {
+    font-size: var(--font-size-large);
+  }
 }
 
-/* 高亮选中的菜单项，边框设置为蓝色 */
-.ant-menu-item-selected {
-    background-color: transparent !important; /* 保持选中项背景透明 */
-    border: 2px solid white; /* 添加蓝色边框 */
+@media (max-width: 480px) {
+  :root {
+    --header-height: 3.5rem;
+    --logo-size: 2rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+  }
+
+  .site-header {
+    padding: 0 var(--spacing-sm);
+  }
+
+  .account-number {
+    font-size: 0.9rem;
+  }
 }
 
-/* 鼠标悬停时，菜单项背景变色 */
-.ant-menu-item:hover {
-    background-color: rgba(0, 0, 0, 0.1); /* 鼠标悬停时菜单项的背景色 */
+/* 防止在高分辨率下溢出 */
+@media (min-width: 1920px) {
+  .site-header {
+    max-width: 1400px;
+  }
 }
 
-/* 给页面内容加一个顶部间距，避免被固定导航栏遮挡 */
-.content {
-    margin-top: 60px; /* 这里要和导航栏高度一致 */
+/* 确保在缩放时保持布局 */
+body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }

@@ -27,12 +27,6 @@ html, body {
   z-index: -1; /* 放在最底层 */
 }
 
-.wall-button {
-  position: absolute; // 固定在屏幕上
-  left: 130px; // 距离左边 20px
-  bottom: 130px; // 距离底部 20px
-  zIndex: 1000; // 保证在最上层
-}
 
 .order-btn {
   width: 300px;
@@ -42,7 +36,7 @@ html, body {
   font-weight: bold;
   font-size: 30px;
   font-family: "Microsoft YaHei";
-
+  bottom: 30%;
   // 你可以加一些 hover 效果
   &:hover {
     background-color: #b5895a;

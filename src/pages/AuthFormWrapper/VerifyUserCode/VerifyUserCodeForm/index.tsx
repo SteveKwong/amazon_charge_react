@@ -182,6 +182,15 @@ const VerifyUserCodeForm: React.FC<VerifyUserCodeFormProps> = ({username, verifi
                     >
                         提交
                     </Button>
+
+
+                    <Button
+                        type="default"
+                        onClick={() => navigate("/")} // ✅ 传函数
+                        variant="outlined"
+                    >
+                        {'返回'}
+                    </Button>
                 </div>
             </Form>
         </div>

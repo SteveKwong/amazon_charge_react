@@ -9,6 +9,7 @@ import ResetPasswordPage from "@/pages/AuthFormWrapper/ResetPassword/ResetPasswo
 import NotExist from "@/pages/NotExist";
 import RegisterPage from "@/pages/AuthFormWrapper/Register/RegisterPage";
 import ResetSuccessPage from "@/pages/AuthFormWrapper/ResetSuccess/ResetSuccessPage";
+import LoginByPhone from "@/pages/AuthFormWrapper/LoginByPhone/LoginByPhonePage";
 
 
 const AppRouter = () => (
@@ -24,6 +25,7 @@ const AppRouter = () => (
             <Route path="/reset-password" element={<ResetPasswordPage/>}/>
             <Route path="/register" element={<RegisterPage/>}/>
             <Route path="/reset-success" element={<ResetSuccessPage/>}/>
+            <Route path="/loginbyphone" element={<LoginByPhone/>}/>
         </Routes>
     </Router>
 );

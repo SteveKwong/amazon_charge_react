@@ -66,7 +66,6 @@ const ForgetPasswordForm: React.FC = () => {
                 // 调用跳转方法并传递参数
                 navigateToVerifyUserCode(username, inputPattern);
             }
-
         } catch (err) {
             setError("*出现问题,请稍后再试");
         } finally {
@@ -101,7 +100,7 @@ const ForgetPasswordForm: React.FC = () => {
                     <br/>
                     <Input
                         type="text"
-                        placeholder="请输入用户名"
+                        placeholder="请输入"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)} // 设置用户名
                     />
@@ -118,6 +117,14 @@ const ForgetPasswordForm: React.FC = () => {
                         }}
                     >
                         {"继续"}
+                    </Button>
+
+                    <Button
+                        type="default"
+                        onClick={() => navigate("/")} // ✅ 传函数
+                        variant="outlined"
+                    >
+                        {'返回'}
                     </Button>
                 </div>
 

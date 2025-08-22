@@ -1,108 +1,88 @@
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {postRequest} from "@/components/network/api";
-import {Button, Form, Input} from "antd";
+import {Button, Form, Input, message} from "antd";
 import ErrorBox from "@/components/ui/ErrorBoxProps";
 
-const RegisterForm = () => {
+const RegisterForm: React.FC = () => {
     /**
-     * 用户名和密码
+     * 用户信息
      */
-    const [username, setUsername] = useState<string>("");
-    const [name, setName] = useState<string>("");
-    const [password1, setPassword1] = useState<string>("");
-    const [password2, setPassword2] = useState<string>("");
+    const [name, setName] = useState<string>(""); // 真实姓名
+    const [username, setUsername] = useState<string>(""); // 用户名（也可作为邮箱）
+    const [phone, setPhone] = useState<string>(""); // 手机号
+    const [email, setEmail] = useState<string>(""); // 邮箱
+    const [password1, setPassword1] = useState<string>(""); // 密码
+    const [password2, setPassword2] = useState<string>(""); // 确认密码
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
-    const [buttonContent, setButtonContent] = useState<string>("继续");
-    const [returnContent, setReturnContent] = useState<string>("返回");
 
-
-    /**
-     * 路径导航
-     */
     const navigate = useNavigate();
-    /**
-     * 正则表达式
-     */
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const phonePattern = /^1[3-9]\d{9}$/; // 中国手机号正则
 
-    const handleLogin = async () => {
-        if (!username || !password1) {
-            setError("* 请您输入用户名或密码");
+    /**
+     * 提交注册
+     */
+    const handleRegister = async () => {
+        if (!username || !password1 || !phone || !email) {
+            setError("* 请填写完整信息");
             return;
         }
-        // 在提交前先进行自定义的正则校验
-        if (!emailPattern.test(username) && !phonePattern.test(username)) {
-            setError("* 用户名格式不正确，请输入有效的邮箱或手机号");
+        if (password1 !== password2) {
+            setError("* 两次密码不一致");
             return;
         }
+
         setLoading(true);
         try {
             const response = await postRequest(
-                "/login",
-                {username, password1},
+                "/portal/userSignUp",
+                {
+                    nickname: name,
+                    username: username,
+                    password: password1,
+                    phone: phone,
+                    email: email,
+                    isMember: false,
+                    surveyResult: ""
+                },
                 false
             );
-            if (response.token) {
-                localStorage.setItem("token", response.token);
-                navigate("/home");
+            console.log(response.code);
+            if (response.code === 500) {
+                setError(response.msg);
+            } else if (response.result === true) {
+                message.success("注册成功");
+                navigate("/login"); // 注册成功后跳转到登录页
             } else {
-                setError("Invalid credentials");
+                setError("* 注册失败，请稍后再试");
             }
         } catch (err) {
-            setError("*出现问题,请稍后再试");
-
+            // @ts-ignore
+            setError(err.message);
         } finally {
             setLoading(false);
         }
     };
 
-
-    // 清除错误信息
-    const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
-        const input = e.target.value
-        if (e.target.id === 'username') {
-            if (input.match(emailPattern)) {
-                setButtonContent("验证邮箱")
-            } else if (input.match(phonePattern)) {
-                setButtonContent("验证手机")
-            } else {
-                setButtonContent("继续")
-            }
-        }
-
-        setter(e.target.value);
-        if ("*出现问题,请稍后再试" === error) {
-            setError(""); // 输入框发生变化时清除错误信息
-        }
-    };
-
-
-    /**
-     * 修改按钮的内容
-     */
-    function changeButtonContent() {
-        if (username.match(emailPattern)) {
-            setButtonContent("邮箱确认")
-        } else if (username.match(phonePattern)) {
-            setButtonContent("手机号确认")
-        } else {
-            setButtonContent("继续")
-        }
-    }
+    // 统一输入处理函数
+    const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>) =>
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setter(e.target.value);
+            if (error) setError(""); // 输入时清除错误提示
+        };
 
     return (
         <div className='login-container'>
             <Form
-                style={{width: '400px', margin: '0 auto'}} // 设置表单字段长度和居中样式
-                onFinish={handleLogin} // 提交表单时触发
-                layout="vertical" // 垂直布局
-                requiredMark={false} // 默认不显示必填标记
+                style={{
+                    width: '400px',
+                    margin: '-100px auto'
+                }}
+                onFinish={handleRegister}
+                layout="vertical"
+                requiredMark={false}
             >
                 <h2>注册</h2>
-                {/* 在登录标题后添加红色的粗线 */}
                 <div className="red-line"/>
                 {error && (
                     <ErrorBox
@@ -110,24 +90,25 @@ const RegisterForm = () => {
                         message={error}
                     />
                 )}
-                {/*姓名*/}
+                {/* 姓名 */}
                 <Form.Item
-                    label="用户名:"
+                    label="姓名:"
                     name="name"
-                    rules={[{required: true, message: '请输入姓名'}]} // 添加校验规则
+                    rules={[{required: true, message: '请输入姓名'}]}
                 >
                     <Input
                         type="text"
-                        placeholder="例:张 三"
+                        placeholder="例: 张三"
                         value={name}
                         onChange={handleInputChange(setName)}
                     />
                 </Form.Item>
-                {/*用户名*/}
+
+                {/* 用户名 */}
                 <Form.Item
-                    label="手机号:"
+                    label="用户名:"
                     name="username"
-                    rules={[{required: true, message: '请输入用户名'}]} // 添加校验规则
+                    rules={[{required: true, message: '请输入用户名'}]}
                 >
                     <Input
                         type="text"
@@ -136,11 +117,40 @@ const RegisterForm = () => {
                         onChange={handleInputChange(setUsername)}
                     />
                 </Form.Item>
-                {/*密码*/}
+
+                {/* 手机号 */}
+                <Form.Item
+                    label="手机号:"
+                    name="phone"
+                    rules={[{required: true, message: '请输入手机号'}]}
+                >
+                    <Input
+                        type="text"
+                        placeholder="请输入手机号"
+                        value={phone}
+                        onChange={handleInputChange(setPhone)}
+                    />
+                </Form.Item>
+
+                {/* 邮箱 */}
+                <Form.Item
+                    label="邮箱:"
+                    name="email"
+                    rules={[{required: true, message: '请输入邮箱'}]}
+                >
+                    <Input
+                        type="email"
+                        placeholder="请输入邮箱"
+                        value={email}
+                        onChange={handleInputChange(setEmail)}
+                    />
+                </Form.Item>
+
+                {/* 密码 */}
                 <Form.Item
                     label="密码:"
                     name="password1"
-                    rules={[{required: true, message: '请输入密码'}]} // 添加校验规则
+                    rules={[{required: true, message: '请输入密码'}]}
                 >
                     <Input.Password
                         placeholder="最少六位数"
@@ -148,19 +158,21 @@ const RegisterForm = () => {
                         onChange={handleInputChange(setPassword1)}
                     />
                 </Form.Item>
-                {/*再次填写密码*/}
+
+                {/* 再次填写密码 */}
                 <Form.Item
                     label="再次填写密码:"
                     name="password2"
-                    rules={[{required: true, message: '再次填写密码'}]} // 添加校验规则
+                    rules={[{required: true, message: '请再次输入密码'}]}
                 >
                     <Input.Password
-                        placeholder="再次填写密码"
+                        placeholder="请再次输入密码"
                         value={password2}
-                        onChange={changeButtonContent}
+                        onChange={handleInputChange(setPassword2)}
                     />
                 </Form.Item>
 
+                {/* 按钮组 */}
                 <div className="button-container">
                     <Button
                         type="primary"
@@ -168,17 +180,16 @@ const RegisterForm = () => {
                         loading={loading}
                         style={{backgroundColor: 'yellow', borderColor: 'yellow', color: '#333'}}
                     >
-                        {buttonContent}
+                        注册
                     </Button>
                     <Button
                         type="default"
-                        onClick={() => navigate("/")} // ✅ 传函数
+                        onClick={() => navigate("/login")}
                         variant="outlined"
                     >
-                        {returnContent}
+                        返回登录
                     </Button>
                 </div>
-
             </Form>
         </div>
     );

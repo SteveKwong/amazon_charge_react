@@ -17,7 +17,6 @@ const Navigate: React.FC = () => {
                 <div className="logo">
                     <img src={logo} alt="Logo" className="logo-image"/>
                 </div>
-
                 <div className="account-number">
                     {'客服热线：139-6401-4229'}
                 </div>

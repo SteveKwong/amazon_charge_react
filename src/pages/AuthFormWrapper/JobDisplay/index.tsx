@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {Card, Row, Col, Button} from "antd";
+import {getRequest} from "@/components/network/api";
 
 
 const JobCard: React.FC<{ job: Job }> = ({job}) => {
@@ -9,7 +10,7 @@ const JobCard: React.FC<{ job: Job }> = ({job}) => {
     /**
      * 注册页面的url
      */
-    const url = "123";
+    const url = "register";
 
     return (
         <Card
@@ -26,23 +27,25 @@ const JobCard: React.FC<{ job: Job }> = ({job}) => {
 
             <p style={{color: "#666"}}>{job.city}</p>
 
-            <div style={{ fontSize: "15px", lineHeight: "22px" }}>
+            <div style={{fontSize: "15px", lineHeight: "22px"}}>
                 <div>
                     入职结算：
                     {job.short_term_settlement_work_day && job.long_term_settlement_work_day ? "有" : "无"}
                 </div>
 
-                <div style={{ marginTop: "8px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div style={{marginTop: "8px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px"}}>
                     {/* 标题行 */}
-                    {job.short_term_settlement_work_day && job.long_term_settlement_work_day &&  <div style={{ color: "gray", fontSize: "13px" }}>质保期</div>}
-                    {job.short_term_settlement_work_day && job.long_term_settlement_work_day && <div style={{ color: "gray", fontSize: "13px" }}>交付结算</div>}
+                    {job.short_term_settlement_work_day && job.long_term_settlement_work_day &&
+                        <div style={{color: "gray", fontSize: "13px"}}>质保期</div>}
+                    {job.short_term_settlement_work_day && job.long_term_settlement_work_day &&
+                        <div style={{color: "gray", fontSize: "13px"}}>交付结算</div>}
 
                     {/* 质保期数据 */}
                     {job.short_term_settlement_work_day && job.short_term_settlement_amount !== null && (
                         <>
-                            <div style={{ color: "black", fontWeight: "bold" }}>
+                            <div style={{color: "black", fontWeight: "bold"}}>
                                 {job.short_term_settlement_work_day}天 -{" "}
-                                <span style={{ color: "orange", fontWeight: "bold" }}>
+                                <span style={{color: "orange", fontWeight: "bold"}}>
                         {job.short_term_settlement_amount} 元
                     </span>
                             </div>
@@ -52,9 +55,9 @@ const JobCard: React.FC<{ job: Job }> = ({job}) => {
                     {/* 交付结算数据 */}
                     {job.long_term_settlement_work_day && job.long_term_settlement_amount !== null && (
                         <>
-                            <div style={{ color: "black", fontWeight: "bold" }}>
+                            <div style={{color: "black", fontWeight: "bold"}}>
                                 {job.long_term_settlement_work_day}天 -{" "}
-                                <span style={{ color: "orange", fontWeight: "bold" }}>
+                                <span style={{color: "orange", fontWeight: "bold"}}>
                         {job.long_term_settlement_amount} 元
                     </span>
                             </div>
@@ -70,8 +73,8 @@ const JobCard: React.FC<{ job: Job }> = ({job}) => {
                     className="job-card-button"
                     style={{
                         position: "absolute",
-                        bottom: "10px",
-                        right: "10px",
+                        bottom: "90px",
+                        right: "20px",
                     }}
                     onClick={() => {
                         window.open(url, "_blank"); // 打开新页面
@@ -91,15 +94,17 @@ const JobDisplay = () => {
     const [jobs, setJobs] = useState<Job[]>([]);
 
     useEffect(() => {
-        // 替换成你的接口URL
-        fetch("http://124.156.208.135:22672/jinx/portal/portalJobList")
-            .then((res) => res.json())
-            .then((data) => {
-                setJobs(data.jobs);
-            })
-            .catch((err) => {
+        const fetchJobs = async () => {
+            try {
+                const response = await getRequest("/portal/portalJobList", undefined, false);
+                // 假设接口返回的数据结构是 { jobs: [...] }
+                setJobs(response.jobs || []);
+            } catch (err) {
+                setJobs([]);
                 console.error("获取职位数据失败:", err);
-            });
+            }
+        };
+        fetchJobs();
     }, []);
 
 
@@ -118,21 +123,27 @@ const JobDisplay = () => {
             >
                 {jobdisplaytitle}
             </h2>
-            <div
-                style={{
-                    justifyContent: "center", // 水平居中
-                    alignItems: "center",     // 垂直居中
-                    minHeight: "10vh",       // 高度撑满整个屏幕
-                    marginLeft: "350px"
-                }}>
-                <Row gutter={[0, 10]}> {/* 间距设为0 */}
-                    {jobs.map((job, index) => (
-                        <Col key={index} span={8}>
-                            <JobCard job={job}/>
-                        </Col>
-                    ))}
-                </Row>
-            </div>
+
+            {
+                jobs.length > 0 &&
+                <div
+                    style={{
+                        justifyContent: "center", // 水平居中
+                        alignItems: "center",     // 垂直居中
+                        minHeight: "10vh",       // 高度撑满整个屏幕
+                    }}>
+                    {/*拿不到数据会报错*/}
+                    <Row gutter={[0, 10]}> {/* 间距设为0 */}
+                        {jobs.map((job, index) => (
+                            <Col key={index} span={8}>
+                                <JobCard job={job}/>
+                            </Col>
+                        ))}
+                    </Row>
+                </div>
+            }
+
+
         </div>
     );
 };

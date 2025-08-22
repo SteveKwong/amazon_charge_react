@@ -6,9 +6,11 @@ import {Spin} from 'antd';
 import MyFooter from "@/pages/AuthFormWrapper/Footer";
 import JobDisplay from "@/pages/AuthFormWrapper/JobDisplay/index"; // 使用 Ant Design 的 Spin 组件作为过场动画
 import { Button } from "antd";
+import LoginByPhoneForm from "@/pages/AuthFormWrapper/LoginByPhone/LoginByPhoneForm";
+import wallpaper from "@/components/Law Firm Website in Gold Blue Sleek Corporate Style (3).png";
 
 
-const LoginPage: React.FC = () => {
+const LoginByPhone: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -17,6 +19,8 @@ const LoginPage: React.FC = () => {
         }, 1000);
         return () => clearTimeout(timer); // 清理定时器以避免内存泄漏
     }, []);
+
+
 
     const footerStyle: React.CSSProperties = {
         textAlign: 'center',
@@ -38,7 +42,7 @@ const LoginPage: React.FC = () => {
                 <>
                     <Navigate/>
                     <Wall>
-                        <LoginForm/>
+                        <LoginByPhoneForm/>
                     </Wall>
                     <MyFooter/>
                 </>
@@ -47,4 +51,4 @@ const LoginPage: React.FC = () => {
     );
 };
 
-export default LoginPage;
+export default LoginByPhone;

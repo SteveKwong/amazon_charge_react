@@ -4,12 +4,15 @@ import LoginForm from "@/pages/AuthFormWrapper/Login/LoginForm";
 import Navigate from "@/pages/Navigate";
 import {Spin} from 'antd';
 import MyFooter from "@/pages/AuthFormWrapper/Footer";
-import JobDisplay from "@/pages/AuthFormWrapper/JobDisplay/index"; // 使用 Ant Design 的 Spin 组件作为过场动画
-import { Button } from "antd";
+// 使用 Ant Design 的 Spin 组件作为过场动画
+import wallpaper from "@/components/Law Firm Website in Gold Blue Sleek Corporate Style (3).png";
 
 
 const LoginPage: React.FC = () => {
+
     const [loading, setLoading] = useState(true);
+
+
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -17,6 +20,16 @@ const LoginPage: React.FC = () => {
         }, 1000);
         return () => clearTimeout(timer); // 清理定时器以避免内存泄漏
     }, []);
+
+    const [loaded, setLoaded] = useState(false);
+
+    useEffect(() => {
+        const img = new Image();
+        // @ts-ignore
+        img.src = {wallpaper};
+        img.onload = () => setLoaded(true);
+    }, []);
+
 
     const footerStyle: React.CSSProperties = {
         textAlign: 'center',
@@ -34,7 +47,6 @@ const LoginPage: React.FC = () => {
                     <Spin size="large"/>
                 </div>
             ) : (
-                // 主页
                 <>
                     <Navigate/>
                     <Wall>
