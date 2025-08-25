@@ -1,5 +1,6 @@
 import React from "react";
 import {Breadcrumb, Card, Typography} from "antd";
+import RightActionBar from "@/components/RightActionBar";
 
 const { Title, Paragraph } = Typography;
 
@@ -15,6 +16,9 @@ const MyBillingPage: React.FC = () => {
                 <Title level={4}>我的账单</Title>
                 <Paragraph>展示账单列表、支付记录与余额（占位）。</Paragraph>
             </Card>
+            <RightActionBar
+                style={{ left: 12, bottom: 12, right: 'auto', top: 'auto' }}
+            />
         </>
     );
 };

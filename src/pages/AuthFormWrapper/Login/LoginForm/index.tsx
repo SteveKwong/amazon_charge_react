@@ -4,6 +4,7 @@ import './index.scss';
 import {Link, useNavigate} from "react-router-dom";
 import {postRequest} from "@/components/network/api";
 import ErrorBox from "@/components/ui/ErrorBoxProps";
+import PuzzleCaptcha from "@/components/PuzzleCaptcha";
 
 const LoginForm: React.FC = () => {
     /**
@@ -13,12 +14,14 @@ const LoginForm: React.FC = () => {
     const [password, setPassword] = useState<string>("");
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
+    const [captchaOpen, setCaptchaOpen] = useState<boolean>(false);
+    const [captchaTicket, setCaptchaTicket] = useState<string>("");
     /**
      * 路径导航
      */
     const navigate = useNavigate();
 
-    const handleLogin = async () => {
+    const submitLogin = async () => {
         if (!username || !password) {
             setError("* 请您输入用户名或密码");
             return;
@@ -57,6 +60,19 @@ const LoginForm: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleLogin = async () => {
+        if (!username || !password) {
+            setError("* 请您输入用户名或密码");
+            return;
+        }
+        // 未通过拼图，则先弹出拼图
+        if (!captchaTicket) {
+            setCaptchaOpen(true);
+            return;
+        }
+        await submitLogin();
     };
 
 
@@ -136,6 +152,16 @@ const LoginForm: React.FC = () => {
                     <Link href="/loginbyphone">手机号/邮箱验证码登录</Link>
                 </div>
             </Form>
+            <PuzzleCaptcha
+                visible={captchaOpen}
+                onClose={() => setCaptchaOpen(false)}
+                onSuccess={(ticket) => {
+                    setCaptchaTicket(ticket);
+                    setCaptchaOpen(false);
+                    // 成功后立刻尝试登录
+                    submitLogin();
+                }}
+            />
         </div>
     );
 };

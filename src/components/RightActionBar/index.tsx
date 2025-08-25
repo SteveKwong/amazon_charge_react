@@ -4,9 +4,10 @@ import {EditOutlined, AudioOutlined, MoreOutlined} from "@ant-design/icons";
 
 type RightActionBarProps = {
     qrSrc?: string;
+    style?: React.CSSProperties; // 支持自定义定位样式
 };
 
-const RightActionBar: React.FC<RightActionBarProps> = ({ qrSrc = "/qr-cs.png" }) => {
+const RightActionBar: React.FC<RightActionBarProps> = ({ qrSrc = "/qr-cs.png", style }) => {
     const [openSuggest, setOpenSuggest] = useState(false);
     const [openContact, setOpenContact] = useState(false);
     const [form] = Form.useForm();
@@ -40,7 +41,8 @@ const RightActionBar: React.FC<RightActionBarProps> = ({ qrSrc = "/qr-cs.png" })
                     padding: expanded ? 8 : 6,
                     border: '1px solid #e5e5e5',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                    transition: 'all .2s ease-in-out'
+                    transition: 'all .2s ease-in-out',
+                    ...(style || {})
                 }}
             >
                 {expanded ? (
