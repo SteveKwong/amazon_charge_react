@@ -15,6 +15,13 @@ const LoginPage: React.FC = () => {
 
 
     useEffect(() => {
+        // 若已登录，直接跳转到 /home，避免返回到登录页
+        const token = localStorage.getItem('token');
+        if (token) {
+            // @ts-ignore
+            window.location.replace('/home');
+            return;
+        }
         const timer = setTimeout(() => {
             setLoading(false);
         }, 1000);
