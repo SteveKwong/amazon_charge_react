@@ -1,0 +1,64 @@
+.my-order-detail-page {
+  .back-button {
+    font-size: 16px;
+    color: #1890ff;
+    
+    &:hover {
+      color: #40a9ff;
+    }
+  }
+
+  .main-title-card {
+    .ant-card-body {
+      padding: 24px;
+    }
+  }
+
+  .info-card {
+    .ant-card-head {
+      border-bottom: 1px solid #f0f0f0;
+      
+      .ant-card-head-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #262626;
+      }
+    }
+    
+    .ant-card-body {
+      padding: 20px;
+    }
+  }
+
+  .reward-card {
+    .ant-statistic-content {
+      text-align: center;
+    }
+  }
+
+  .user-info {
+    .ant-card-body {
+      padding: 20px;
+    }
+  }
+
+  .time-info {
+    .ant-card-body {
+      padding: 20px;
+    }
+  }
+
+  .ant-descriptions-item-label {
+    font-weight: 600;
+    color: #666;
+  }
+
+  .ant-tag {
+    border-radius: 6px;
+    font-weight: 500;
+  }
+
+  .ant-divider {
+    margin: 16px 0;
+  }
+}

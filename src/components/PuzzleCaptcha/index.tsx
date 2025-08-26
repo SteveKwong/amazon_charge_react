@@ -29,16 +29,22 @@ const getRandomInt = (min: number, max: number) => {
 
 const drawImageToCanvas = async (imageUrl: string, canvas: HTMLCanvasElement) => {
     return new Promise<void>((resolve, reject) => {
+        console.log('Loading image:', imageUrl); // 调试信息
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
+            console.log('Image loaded successfully:', imageUrl); // 调试信息
             const ctx = canvas.getContext('2d');
             if (!ctx) return reject(new Error('Canvas context not found'));
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             resolve();
         };
-        img.onerror = () => reject(new Error('Failed to load image'));
+        img.onerror = (error) => {
+            console.error('Image load error:', error); // 调试信息
+            console.error('Failed to load image:', imageUrl); // 调试信息
+            reject(new Error(`Failed to load image: ${imageUrl}`));
+        };
         img.src = imageUrl;
     });
 };
@@ -55,12 +61,13 @@ const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({ visible, onClose, onSucce
     const [errorMsg, setErrorMsg] = useState<string>('');
 
     const imagePool = useMemo(() => [
-        // 使用项目内现有图片，避免额外依赖
-        // 这些路径经由 Webpack/Vite 处理为可访问的 URL
-        require('@/components/tee.png'),
-        require('@/components/tee2.png'),
-        require('@/components/icon.png'),
-        require('@/components/icon2.png'),
+        // 使用public文件夹中的图片，确保路径正确
+        '/tee.png',
+        '/tee2.png',
+        '/icon.png',
+        '/icon2.png',
+        // 备选方案：使用在线占位图片服务
+        'https://via.placeholder.com/310x155/4A90E2/FFFFFF?text=验证码图片',
     ], []);
 
     const [imageUrl, setImageUrl] = useState<string>('');
@@ -79,6 +86,7 @@ const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({ visible, onClose, onSucce
             pieceCanvas.height = config.canvasHeight;
 
             const img = imagePool[getRandomInt(0, imagePool.length - 1)];
+            console.log('Selected image from pool:', img); // 调试信息
             setImageUrl(img);
             await drawImageToCanvas(img, bgCanvas);
 
@@ -108,6 +116,9 @@ const PuzzleCaptcha: React.FC<PuzzleCaptchaProps> = ({ visible, onClose, onSucce
             pieceCtx.shadowBlur = 8;
             pieceCtx.drawImage(bgCanvas, x, y, config.pieceSize, config.pieceSize, 0, y, config.pieceSize, config.pieceSize);
             pieceCtx.restore();
+        } catch (error) {
+            console.error('Reset error:', error);
+            setErrorMsg('图片加载失败，请重试');
         } finally {
             setLoading(false);
         }

@@ -1,0 +1,209 @@
+.order-detail-page {
+  .ant-card {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  .status-tag {
+    font-size: 14px;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+  
+  .reward-card {
+    .ant-card-body {
+      text-align: center;
+    }
+    
+    .reward-amount {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .reward-label {
+      font-size: 14px;
+      color: #666;
+    }
+  }
+  
+  .settlement-rule {
+    .short-term {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    
+    .long-term {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .rule-title {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .rule-content {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .rule-amount {
+      font-size: 18px;
+    }
+  }
+  
+  .time-info {
+    .time-item {
+      margin-bottom: 16px;
+      
+      .time-label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        
+        .anticon {
+          margin-right: 6px;
+        }
+      }
+      
+      .time-value {
+        font-size: 16px;
+        font-weight: 500;
+      }
+    }
+  }
+  
+  .welfare-section {
+    .welfare-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      
+      .anticon {
+        margin-right: 8px;
+      }
+    }
+    
+    .welfare-content {
+      line-height: 1.8;
+      font-size: 14px;
+      color: #333;
+    }
+  }
+  
+  .back-button {
+    font-size: 16px;
+    padding: 0;
+    height: auto;
+    
+    &:hover {
+      color: #1890ff;
+    }
+  }
+  
+  .main-title-card {
+    .ant-card-body {
+      padding: 32px;
+    }
+    
+    .job-title {
+      margin: 0;
+      color: #262626;
+    }
+    
+    .service-fee {
+      text-align: right;
+      
+      .fee-amount {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1890ff;
+      }
+      
+      .fee-label {
+        font-size: 14px;
+        color: #666;
+      }
+    }
+  }
+  
+  .info-card {
+    .ant-card-head-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .ant-card-body {
+      padding: 24px;
+    }
+  }
+  
+  .descriptions-item {
+    .ant-descriptions-item-label {
+      font-weight: 500;
+      color: #666;
+    }
+    
+    .ant-descriptions-item-content {
+      font-weight: 500;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .order-detail-page {
+    padding: 16px;
+    
+    .main-title-card {
+      .ant-card-body {
+        padding: 20px;
+      }
+      
+      .job-title {
+        font-size: 20px;
+      }
+    }
+    
+    .info-card {
+      .ant-card-body {
+        padding: 16px;
+      }
+    }
+    
+    .settlement-rule {
+      .short-term,
+      .long-term {
+        padding: 12px;
+        
+        .rule-title {
+          font-size: 14px;
+        }
+        
+        .rule-content {
+          font-size: 16px;
+        }
+        
+        .rule-amount {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+}

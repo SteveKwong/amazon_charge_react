@@ -1,15 +1,219 @@
-import React, { useState } from "react";
-import {Breadcrumb, Card, Col, Row, Statistic, Typography, Button, Space, Table, Tag, Modal} from "antd";
+import React, { useState, useEffect } from "react";
+import {Breadcrumb, Card, Col, Row, Statistic, Typography, Button, Space, Table, Tag, Spin, message, Form, Input, Select} from "antd";
 import DashboardSection from "@/components/DashboardSection";
+import { getRequest, postRequest } from "@/components/network/api";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
-const MyOrdersPage: React.FC = () => {
-    const [detailItem, setDetailItem] = useState<any>(null);
+interface MyJobData {
+    today_job_num: number;
+    accepted_job_num: number;
+    over_job_num: number;
+}
 
-    const handleViewDetail = (record: any) => {
-        setDetailItem(record);
+interface OrderItem {
+    id: string;
+    title: string;
+    job_type: string;
+    city: string;
+    salary: string;
+    welfare: string;
+    policy_welfare: string;
+    hr_bonus: number;
+    service_fee: number;
+}
+
+interface PageResp {
+    total_count: number;
+    page_size: number;
+    total_page: number;
+    curr_page: number;
+    list: OrderItem[];
+}
+
+const MyOrdersPage: React.FC = () => {
+    const navigate = useNavigate();
+    const [form] = Form.useForm();
+    const [loading, setLoading] = useState(true);
+    const [myJobData, setMyJobData] = useState<MyJobData | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    
+    // 订单列表相关状态
+    const [orderList, setOrderList] = useState<OrderItem[]>([]);
+    const [orderLoading, setOrderLoading] = useState(false);
+    const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(10);
+    const [total, setTotal] = useState<number>(0);
+    const [cities, setCities] = useState<string[]>([]);
+    const [jobTypes, setJobTypes] = useState<string[]>([]);
+
+    const initialQuery = {
+        title: "",
+        jobType: "",
+        city: "",
+        sortHrBonus: "",
+        sortServiceFee: "",
+        jobId: "",
     };
+
+    useEffect(() => {
+        fetchMyJobData();
+        fetchOrderList();
+        fetchOptions();
+    }, []);
+
+    const fetchMyJobData = async () => {
+        try {
+            setLoading(true);
+            const response = await getRequest("/user/myJobDisplay", {}, true);
+            
+            if (response?.code === 200 && response?.data) {
+                setMyJobData(response.data);
+            } else {
+                setError(response?.msg || '获取接单数据失败');
+            }
+        } catch (error: any) {
+            console.error('获取接单数据失败:', error);
+            setError('获取接单数据失败，请重试');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchOptions = async () => {
+        try {
+            const [cityResp, typeResp] = await Promise.all([
+                getRequest("/jobTask/distinct-city", {}, true),
+                getRequest("/jobTask/distinct-titles", {}, true),
+            ]);
+            const cityData = cityResp?.data ?? cityResp?.result ?? cityResp;
+            const typeData = typeResp?.data ?? typeResp?.result ?? typeResp;
+            setCities(Array.isArray(cityData) ? cityData : (cityData?.list || []));
+            setJobTypes(Array.isArray(typeData) ? typeData : (typeData?.list || []));
+        } catch (error: any) {
+            console.error('获取选项数据失败:', error);
+        }
+    };
+
+    const fetchOrderList = async (q?: Partial<typeof initialQuery>, p: number = page, s: number = pageSize) => {
+        try {
+            setOrderLoading(true);
+            const values = form.getFieldsValue();
+            const payload = {
+                page: p,
+                size: s,
+                title: values.title ?? initialQuery.title,
+                jobType: values.jobType ?? initialQuery.jobType,
+                city: values.city ?? initialQuery.city,
+                sortHrBonus: values.sortHrBonus ?? initialQuery.sortHrBonus,
+                sortServiceFee: values.sortServiceFee ?? initialQuery.sortServiceFee,
+                jobId: values.jobId ?? initialQuery.jobId,
+                ...q,
+            };
+            
+            const response = await postRequest("/user/page", payload, true);
+            if (response?.code === 200 && response?.data) {
+                const data = response.data;
+                setOrderList(data.list || []);
+                setTotal(data.total_count || 0);
+                setPage(data.curr_page || p);
+                setPageSize(data.page_size || s);
+            } else {
+                message.error(response?.msg || '获取订单列表失败');
+            }
+        } catch (error: any) {
+            console.error('获取订单列表失败:', error);
+            message.error('获取订单列表失败，请重试');
+        } finally {
+            setOrderLoading(false);
+        }
+    };
+
+    const handleViewDetail = (record: OrderItem) => {
+        navigate(`/home/my-order-detail/${record.id}`);
+    };
+
+    const columns = [
+        { 
+            title: '订单号', 
+            dataIndex: 'id',
+            render: (id: string) => (
+                <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#1890ff' }}>
+                    {id}
+                </span>
+            )
+        },
+        { title: '工作类型', dataIndex: 'title' },
+        { title: '岗位', dataIndex: 'job_type' },
+        { title: '城市', dataIndex: 'city' },
+        { title: '薪资', dataIndex: 'salary' },
+        { title: 'HR奖励', dataIndex: 'hr_bonus', render: (v: number) => v ? `¥${v}` : '-' },
+        { title: '服务费', dataIndex: 'service_fee', render: (v: number) => v ? `¥${v}` : '-' },
+        {
+            title: '操作',
+            key: 'action',
+            render: (_: any, record: OrderItem) => (
+                <Space>
+                    <Button 
+                        size="small" 
+                        type="primary" 
+                        ghost 
+                        onClick={() => handleViewDetail(record)}
+                        style={{
+                            borderRadius: '6px',
+                            border: '1px solid #1890ff',
+                            color: '#1890ff',
+                            fontWeight: 500,
+                            boxShadow: '0 2px 4px rgba(24, 144, 255, 0.1)',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(24, 144, 255, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(24, 144, 255, 0.1)';
+                        }}
+                    >
+                        详细
+                    </Button>
+                </Space>
+            )
+        },
+    ];
+
+    if (loading) {
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '60vh',
+                flexDirection: 'column'
+            }}>
+                <Spin size="large" />
+                <div style={{
+                    fontSize: '18px',
+                    fontWeight: 500,
+                    color: '#666',
+                    marginTop: '16px'
+                }}>
+                    正在加载接单数据...
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !myJobData) {
+        return (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+                <Title level={3} type="danger">{error || '数据加载失败'}</Title>
+                <Button type="primary" onClick={fetchMyJobData}>重新加载</Button>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -32,7 +236,7 @@ const MyOrdersPage: React.FC = () => {
                     >
                         <Statistic 
                             title="今日新单" 
-                            value={12} 
+                            value={myJobData.today_job_num} 
                             suffix="单"
                             valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
                         />
@@ -53,7 +257,7 @@ const MyOrdersPage: React.FC = () => {
                     >
                         <Statistic 
                             title="进行中" 
-                            value={5} 
+                            value={myJobData.accepted_job_num} 
                             suffix="单"
                             valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
                         />
@@ -74,7 +278,7 @@ const MyOrdersPage: React.FC = () => {
                     >
                         <Statistic 
                             title="已完成" 
-                            value={36} 
+                            value={myJobData.over_job_num} 
                             suffix="单"
                             valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
                         />
@@ -85,87 +289,215 @@ const MyOrdersPage: React.FC = () => {
                 </Col>
             </Row>
 
+            {/* 筛选条件 */}
+            <Card 
+                bordered={false} 
+                style={{
+                    marginTop: 16,
+                    borderRadius: 12,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                }}
+                title={
+                    <div style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 8,
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        color: '#262626'
+                    }}>
+                        <span>🔍</span>
+                        <span>筛选条件</span>
+                    </div>
+                }
+            >
+                <Form 
+                    layout="vertical" 
+                    form={form} 
+                    onFinish={() => { setPage(1); fetchOrderList(undefined, 1, pageSize); }}
+                    style={{ marginTop: 8 }}
+                >
+                    <Row gutter={[24, 16]}>
+                        <Col xs={24} sm={12} md={8} lg={6}>
+                            <Form.Item 
+                                label="工作关键字"
+                                name="title"
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Input 
+                                    allowClear 
+                                    placeholder="输入关键词搜索" 
+                                    style={{ 
+                                        borderRadius: 8,
+                                        border: '1px solid #d9d9d9'
+                                    }}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12} md={8} lg={6}>
+                            <Form.Item 
+                                label="岗位类型" 
+                                name="jobType"
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Select 
+                                    allowClear 
+                                    placeholder="选择岗位类型"
+                                    style={{ 
+                                        borderRadius: 8,
+                                        border: '1px solid #d9d9d9'
+                                    }}
+                                    options={[
+                                        { value: '', label: '全部岗位' },
+                                        ...jobTypes.map(j => ({ value: j, label: j }))
+                                    ]}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12} md={8} lg={6}>
+                            <Form.Item 
+                                label="城市地区" 
+                                name="city"
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Select 
+                                    allowClear 
+                                    placeholder="选择城市地区"
+                                    style={{ 
+                                        borderRadius: 8,
+                                        border: '1px solid #d9d9d9'
+                                    }}
+                                    options={[
+                                        { value: '', label: '全部城市' },
+                                        ...cities.map(c => ({ value: c, label: c }))
+                                    ]}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12} md={8} lg={6}>
+                            <Form.Item 
+                                label="HR奖励排序" 
+                                name="sortHrBonus"
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Select 
+                                    allowClear 
+                                    placeholder="选择排序方式"
+                                    style={{ 
+                                        borderRadius: 8,
+                                        border: '1px solid #d9d9d9'
+                                    }}
+                                    options={[
+                                        { value: '', label: '不排序' },
+                                        {value:'asc', label:'升序 (低→高)'},
+                                        {value:'desc', label:'降序 (高→低)'}
+                                    ]}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12} md={8} lg={6}>
+                            <Form.Item 
+                                label="服务费排序" 
+                                name="sortServiceFee"
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Select 
+                                    allowClear 
+                                    placeholder="选择排序方式"
+                                    style={{ 
+                                        borderRadius: 8,
+                                        border: '1px solid #d9d9d9'
+                                    }}
+                                    options={[
+                                        { value: '', label: '不排序' },
+                                        {value:'asc', label:'升序 (低→高)'},
+                                        {value:'desc', label:'降序 (高→低)'}
+                                    ]}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={12} md={8} lg={6}>
+                            <Form.Item 
+                                label="订单号" 
+                                name="jobId"
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Input 
+                                    allowClear 
+                                    placeholder="输入订单号搜索" 
+                                    style={{ 
+                                        borderRadius: 8,
+                                        border: '1px solid #d9d9d9'
+                                    }}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    
+                    {/* 查询重置按钮行 */}
+                    <Row style={{ marginTop: 16 }}>
+                        <Col xs={24} style={{ textAlign: 'left' }}>
+                            <Space size={12}>
+                                <Button 
+                                    type="primary" 
+                                    htmlType="submit"
+                                    style={{
+                                        borderRadius: 8,
+                                        height: 40,
+                                        padding: '0 24px',
+                                        fontWeight: 500,
+                                        boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
+                                    }}
+                                >
+                                    搜索
+                                </Button>
+                                <Button 
+                                    onClick={() => { 
+                                        form.resetFields(); 
+                                        form.setFieldsValue(initialQuery); 
+                                        setPage(1); 
+                                        fetchOrderList(initialQuery, 1, pageSize); 
+                                    }}
+                                    style={{
+                                        borderRadius: 8,
+                                        height: 40,
+                                        padding: '0 24px',
+                                        fontWeight: 500,
+                                        border: '1px solid #d9d9d9'
+                                    }}
+                                >
+                                    重置
+                                </Button>
+                            </Space>
+                        </Col>
+                    </Row>
+                </Form>
+            </Card>
+
             <DashboardSection
                 style={{marginTop: 16}}
-                title="订单列表"
-                description="最近接单概览"
-                extra={<Button>导出</Button>}
+                title="我的接单列表"
+                description="我的接单记录"
             >
                 <Table
                     rowKey="id"
-                    pagination={{pageSize: 8, showSizeChanger: false}}
-                    columns={[
-                        { title: '订单号', dataIndex: 'id' },
-                        { title: '客户', dataIndex: 'customer' },
-                        { title: '金额', dataIndex: 'amount', render: (v) => `¥${v}` },
-                        { title: '状态', dataIndex: 'status', render: (s) => <Tag color={s==='进行中'?'blue': s==='已完成'?'green':'default'}>{s}</Tag> },
-                        { title: '创建时间', dataIndex: 'createdAt' },
-                        {
-                            title: '操作',
-                            key: 'action',
-                            render: (_, record) => (
-                                <Space>
-                                    <Button 
-                                        size="small" 
-                                        type="primary" 
-                                        ghost 
-                                        onClick={() => handleViewDetail(record)}
-                                    >
-                                        详细
-                                    </Button>
-                                </Space>
-                            )
-                        },
-                    ]}
-                    dataSource={[
-                        { id: 'A1001', customer: '张三', amount: 120, status: '进行中', createdAt: '2025-08-20 10:20' },
-                        { id: 'A1002', customer: '李四', amount: 80, status: '已完成', createdAt: '2025-08-19 09:12' },
-                        { id: 'A1003', customer: '王五', amount: 220, status: '进行中', createdAt: '2025-08-18 14:30' },
-                        { id: 'A1004', customer: '赵六', amount: 150, status: '已完成', createdAt: '2025-08-17 16:02' },
-                    ]}
+                    loading={orderLoading}
+                    columns={columns}
+                    dataSource={orderList}
+                    pagination={{
+                        current: page,
+                        pageSize: pageSize,
+                        total: total,
+                        showSizeChanger: true,
+                        pageSizeOptions: [10, 20, 50],
+                        onChange: (p, s) => {
+                            setPage(p);
+                            setPageSize(s);
+                            fetchOrderList(undefined, p, s);
+                        }
+                    }}
                 />
             </DashboardSection>
-
-            {/* 订单详情Modal */}
-            <Modal
-                open={!!detailItem}
-                onCancel={() => setDetailItem(null)}
-                title="订单详情"
-                footer={<Button onClick={() => setDetailItem(null)}>关闭</Button>}
-                centered
-                width={640}
-            >
-                {detailItem && (
-                    <div style={{ padding: '16px 0' }}>
-                        <Row gutter={[16, 16]}>
-                            <Col span={12}>
-                                <div style={{ fontWeight: 600, marginBottom: 8 }}>订单号：</div>
-                                <div>{detailItem.id}</div>
-                            </Col>
-                            <Col span={12}>
-                                <div style={{ fontWeight: 600, marginBottom: 8 }}>客户：</div>
-                                <div>{detailItem.customer}</div>
-                            </Col>
-                            <Col span={12}>
-                                <div style={{ fontWeight: 600, marginBottom: 8 }}>金额：</div>
-                                <div>¥{detailItem.amount}</div>
-                            </Col>
-                            <Col span={12}>
-                                <div style={{ fontWeight: 600, marginBottom: 8 }}>状态：</div>
-                                <div>
-                                    <Tag color={detailItem.status==='进行中'?'blue': detailItem.status==='已完成'?'green':'default'}>
-                                        {detailItem.status}
-                                    </Tag>
-                                </div>
-                            </Col>
-                            <Col span={24}>
-                                <div style={{ fontWeight: 600, marginBottom: 8 }}>创建时间：</div>
-                                <div>{detailItem.createdAt}</div>
-                            </Col>
-                        </Row>
-                    </div>
-                )}
-            </Modal>
         </>
     );
 };

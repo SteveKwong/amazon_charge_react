@@ -1,13 +1,101 @@
-import React from "react";
-import {Breadcrumb, Card, Col, Row, Typography} from "antd";
+import React, { useEffect, useState } from "react";
+import {Breadcrumb, Card, Col, Row, Typography, Spin, message} from "antd";
 import EChart from "@/components/EChart";
+import { getRequest } from "@/components/network/api";
 
 const { Title } = Typography;
 
+interface SalesData {
+    sales_num_by_city_volist: Array<{
+        city_name: string;
+        accepting_num: number;
+        accepted_num: number;
+    }>;
+    sales_num_by_type_volist: Array<{
+        job_type: string;
+        job_num: number;
+    }>;
+    total_accepted_num: number;
+    total_retain_num: number;
+}
+
 const SalesPage: React.FC = () => {
-    // 假数据（可替换为真实汇总接口）
-    const availableQuota = 186; // 可接单数量
-    const quotaTotal = 500; // 总额度
+    const [loading, setLoading] = useState(true);
+    const [salesData, setSalesData] = useState<SalesData | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchSalesData();
+    }, []);
+
+    const fetchSalesData = async () => {
+        try {
+            setLoading(true);
+            const response = await getRequest("/jobTask/salesDisplay", {}, true);
+            
+            if (response?.code === 200 && response?.data) {
+                setSalesData(response.data);
+            } else {
+                setError(response?.msg || '获取销量数据失败');
+            }
+        } catch (error: any) {
+            console.error('获取销量数据失败:', error);
+            setError('获取销量数据失败，请重试');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '60vh',
+                flexDirection: 'column'
+            }}>
+                <Spin size="large" />
+                <div style={{
+                    fontSize: '18px',
+                    fontWeight: 500,
+                    color: '#666',
+                    marginTop: '16px'
+                }}>
+                    正在加载销量数据...
+                </div>
+            </div>
+        );
+    }
+
+    if (error || !salesData) {
+        return (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+                <Title level={3} type="danger">{error || '数据加载失败'}</Title>
+                <button onClick={fetchSalesData} style={{
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    borderRadius: '6px',
+                    border: '1px solid #d9d9d9',
+                    background: '#fff',
+                    cursor: 'pointer'
+                }}>
+                    重新加载
+                </button>
+            </div>
+        );
+    }
+
+    // 准备城市数据
+    const cityNames = salesData.sales_num_by_city_volist.map(item => item.city_name);
+    const unacceptedData = salesData.sales_num_by_city_volist.map(item => item.accepting_num); // 可以接单（待接单）
+    const acceptedData = salesData.sales_num_by_city_volist.map(item => item.accepted_num); // 已经接单
+
+    // 准备岗位数据
+    const jobTypeData = salesData.sales_num_by_type_volist.map(item => ({
+        value: item.job_num,
+        name: item.job_type
+    }));
 
     return (
         <>
@@ -19,18 +107,81 @@ const SalesPage: React.FC = () => {
             
             <Row gutter={[16, 16]}>
                 <Col xs={24} md={16}>
-                    <Card bordered={false} style={{borderRadius: 12}} title="按城市销量（示例）">
+                    <Card 
+                        bordered={false} 
+                        style={{
+                            borderRadius: 12,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                        }} 
+                        title={
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 8,
+                                fontSize: '16px',
+                                fontWeight: 600,
+                                color: '#262626'
+                            }}>
+                                <span>📊</span>
+                                <span>按城市销量分布</span>
+                            </div>
+                        }
+                    >
                         <EChart
                             style={{height: 280}}
                             option={{
-                                tooltip: { trigger: 'axis' },
-                                grid: { left: 24, right: 12, top: 24, bottom: 24 },
-                                xAxis: { type: 'category', data: ['上海','北京','广州','深圳','杭州','成都','重庆'] },
+                                tooltip: { 
+                                    trigger: 'axis',
+                                    formatter: function(params: any) {
+                                        let result = params[0].name + '<br/>';
+                                        params.forEach((param: any) => {
+                                            result += param.marker + param.seriesName + ': ' + param.value + '<br/>';
+                                        });
+                                        return result;
+                                    }
+                                },
+                                grid: { left: 24, right: 12, top: 40, bottom: 60 },
+                                xAxis: { 
+                                    type: 'category', 
+                                    data: cityNames,
+                                    axisLabel: {
+                                        rotate: 30,
+                                        fontSize: 11,
+                                        margin: 16,
+                                        interval: 0
+                                    },
+                                    axisTick: {
+                                        alignWithLabel: true
+                                    }
+                                },
                                 yAxis: { type: 'value' },
-                                legend: { data: ['接单','取消'] },
+                                legend: { 
+                                    data: ['待接单', '已接单'],
+                                    top: 10
+                                },
                                 series: [
-                                    { name: '接单', type: 'bar', data: [95, 70, 66, 58, 48, 42, 36], itemStyle: { color: '#057a55' } },
-                                    { name: '取消', type: 'bar', data: [42, 22, 18, 15, 12, 10, 9], itemStyle: { color: '#f59e0b' } },
+                                    { 
+                                        name: '待接单', 
+                                        type: 'bar', 
+                                        data: unacceptedData, 
+                                        itemStyle: { color: '#1890ff' },
+                                        emphasis: {
+                                            itemStyle: {
+                                                color: '#40a9ff'
+                                            }
+                                        }
+                                    },
+                                    { 
+                                        name: '已接单', 
+                                        type: 'bar', 
+                                        data: acceptedData, 
+                                        itemStyle: { color: '#52c41a' },
+                                        emphasis: {
+                                            itemStyle: {
+                                                color: '#73d13d'
+                                            }
+                                        }
+                                    },
                                 ]
                             }}
                         />
@@ -38,21 +189,59 @@ const SalesPage: React.FC = () => {
                 </Col>
 
                 <Col xs={24} md={8}>
-                    <Card bordered={false} style={{borderRadius: 12}} title="可接单比例（示例）">
+                    <Card 
+                        bordered={false} 
+                        style={{
+                            borderRadius: 12,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                        }} 
+                        title={
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 8,
+                                fontSize: '16px',
+                                fontWeight: 600,
+                                color: '#262626'
+                            }}>
+                                <span>📈</span>
+                                <span>接单状态比例</span>
+                            </div>
+                        }
+                    >
                         <EChart
                             style={{height: 280}}
                             option={{
+                                tooltip: {
+                                    trigger: 'item',
+                                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                                },
                                 series: [
                                     {
+                                        name: '接单状态',
                                         type: 'pie',
                                         radius: ['60%','85%'],
                                         avoidLabelOverlap: false,
-                                        label: { show: true, position: 'center', formatter: `{b}\n{c}` },
+                                        label: { 
+                                            show: true, 
+                                            position: 'center', 
+                                            formatter: `{b}\n{c}`,
+                                            fontSize: 14,
+                                            fontWeight: 600
+                                        },
                                         data: [
-                                            { value: availableQuota, name: '可接单' },
-                                            { value: Math.max(0, quotaTotal - availableQuota), name: '剩余额度' },
+                                            { 
+                                                value: salesData.total_accepted_num, 
+                                                name: '已接单',
+                                                itemStyle: { color: '#52c41a' }
+                                            },
+                                            { 
+                                                value: salesData.total_retain_num, 
+                                                name: '未接单',
+                                                itemStyle: { color: '#1890ff' }
+                                            },
                                         ],
-                                        color: ['#10b981','#e5e7eb']
+                                        color: ['#52c41a','#1890ff']
                                     }
                                 ]
                             }}
@@ -61,25 +250,50 @@ const SalesPage: React.FC = () => {
                 </Col>
 
                 <Col xs={24}>
-                    <Card bordered={false} style={{borderRadius: 12}} title="按岗位分布（示例）">
+                    <Card 
+                        bordered={false} 
+                        style={{
+                            borderRadius: 12,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                        }} 
+                        title={
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 8,
+                                fontSize: '16px',
+                                fontWeight: 600,
+                                color: '#262626'
+                            }}>
+                                <span>🏢</span>
+                                <span>按岗位分布</span>
+                            </div>
+                        }
+                    >
                         <EChart
                             style={{height: 280}}
                             option={{
-                                tooltip: { trigger: 'item' },
-                                legend: { top: 'bottom' },
+                                tooltip: { 
+                                    trigger: 'item',
+                                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                                },
+                                legend: { 
+                                    top: 'bottom',
+                                    textStyle: {
+                                        fontSize: 12
+                                    }
+                                },
                                 series: [
                                     {
+                                        name: '岗位分布',
                                         type: 'pie',
                                         radius: ['40%','70%'],
-                                        label: { formatter: '{b}: {d}%' },
-                                        data: [
-                                            { value: 38, name: '外卖' },
-                                            { value: 22, name: '仓储' },
-                                            { value: 18, name: '配送' },
-                                            { value: 12, name: '代驾' },
-                                            { value: 10, name: '其他' }
-                                        ],
-                                        color: ['#16a34a','#06b6d4','#f59e0b','#ef4444','#6366f1']
+                                        label: { 
+                                            formatter: '{b}: {c}',
+                                            fontSize: 12
+                                        },
+                                        data: jobTypeData,
+                                        color: ['#16a34a','#06b6d4','#f59e0b','#ef4444','#6366f1','#8b5cf6','#ec4899']
                                     }
                                 ]
                             }}

@@ -1,9 +1,11 @@
 import React, {useEffect, useMemo, useState} from "react";
-import {Breadcrumb, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography, message, Statistic} from "antd";
+import {Breadcrumb, Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography, message, Statistic, Spin} from "antd";
+import { useNavigate } from "react-router-dom";
 import DashboardSection from "@/components/DashboardSection";
 import {getRequest, postRequest} from "@/components/network/api";
 import './index.scss';
 import EChart from "@/components/EChart";
+import TokenExpiredModal from "@/components/TokenExpiredModal";
 
 const { Title } = Typography;
 
@@ -25,6 +27,7 @@ type PageResp = {
 };
 
 const LobbyPage: React.FC = () => {
+    const navigate = useNavigate();
     const [form] = Form.useForm();
     const [data, setData] = useState<JobTask[]>([]);
     const [total, setTotal] = useState<number>(0);
@@ -36,9 +39,18 @@ const LobbyPage: React.FC = () => {
     const [detailItem, setDetailItem] = useState<JobTask | null>(null);
     // 统计数据
     const [totalOrders, setTotalOrders] = useState<number>(0);
-    const [acceptingOrders, setAcceptingOrders] = useState<number>(0);
+    const [acceptingOrdersCount, setAcceptingOrdersCount] = useState<number>(0);
     const [totalAmount, setTotalAmount] = useState<number>(0);
     const [availableQuota, setAvailableQuota] = useState<number>(0);
+    
+    // Token过期状态
+    const [tokenExpired, setTokenExpired] = useState<boolean>(false);
+    
+    // 页面整体加载状态
+    const [pageLoading, setPageLoading] = useState<boolean>(true);
+    
+    // 接单中的订单ID集合
+    const [acceptingOrderIds, setAcceptingOrderIds] = useState<Set<string | number>>(new Set());
 
     const initialQuery = useMemo(() => ({
         title: "",
@@ -58,8 +70,11 @@ const LobbyPage: React.FC = () => {
             const typeData = typeResp?.data ?? typeResp?.result ?? typeResp;
             setCities(Array.isArray(cityData) ? cityData : (cityData?.list || []));
             setJobTypes(Array.isArray(typeData) ? typeData : (typeData?.list || []));
-        } catch (_) {
-            // 忽略，保持为空
+        } catch (error: any) {
+            if (error?.response?.status === 401) {
+                setTokenExpired(true);
+            }
+            // 忽略其他错误，保持为空
         }
     };
 
@@ -70,17 +85,23 @@ const LobbyPage: React.FC = () => {
             if (response?.code === 200 && response?.data) {
                 const { total_task_num, accepting_num, total_task_money, can_accepting_num } = response.data;
                 setTotalOrders(total_task_num || 0);
-                setAcceptingOrders(accepting_num || 0);
+                setAcceptingOrdersCount(accepting_num || 0);
                 setTotalAmount(total_task_money || 0);
                 setAvailableQuota(can_accepting_num || 0);
             }
-        } catch (error) {
-            console.error("获取统计数据失败:", error);
+        } catch (error: any) {
+            if (error?.response?.status === 401) {
+                setTokenExpired(true);
+            } else {
+                console.error("获取统计数据失败:", error);
+            }
         }
     };
 
-    const fetchPage = async (q?: Partial<typeof initialQuery>, p: number = page, s: number = pageSize) => {
-        setLoading(true);
+    const fetchPage = async (q?: Partial<typeof initialQuery>, p: number = page, s: number = pageSize, showLoading: boolean = true) => {
+        if (showLoading) {
+            setLoading(true);
+        }
         try {
             const values = form.getFieldsValue();
             const payload = {
@@ -121,23 +142,88 @@ const LobbyPage: React.FC = () => {
             setTotal(totalElements);
             setPage(nextPage);
             setPageSize(nextSize);
+        } catch (error: any) {
+            if (error?.response?.status === 401) {
+                setTokenExpired(true);
+            } else {
+                console.error("获取订单列表失败:", error);
+            }
         } finally {
-            setLoading(false);
+            if (showLoading) {
+                setLoading(false);
+            }
         }
     };
 
     useEffect(() => {
-        fetchOptions();
-        fetchStatistics();
-        // 初始化查询
-        form.setFieldsValue(initialQuery);
-        fetchPage(initialQuery, 1, pageSize);
+        const initializePage = async () => {
+            try {
+                // 并行执行所有初始化请求
+                await Promise.all([
+                    fetchOptions(),
+                    fetchStatistics(),
+                    fetchPage(initialQuery, 1, pageSize, false)
+                ]);
+                
+                // 设置表单初始值
+                form.setFieldsValue(initialQuery);
+                
+                // 所有数据加载完成，隐藏加载状态
+                setPageLoading(false);
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+                // 即使出错也要隐藏加载状态，避免页面一直加载
+                setPageLoading(false);
+            }
+        };
+        
+        initializePage();
     }, []);
 
-    const acceptOrder = (record: JobTask) => {
-        // 仅前端模拟：移除该条并提示
-        setData(prev => prev.filter(item => String(item.id) !== String(record.id)));
-        message.success('接单成功');
+    const acceptOrder = async (record: JobTask) => {
+        const orderId = String(record.id);
+        
+        // 如果正在接单中，直接返回
+        if (acceptingOrderIds.has(orderId)) {
+            return;
+        }
+        
+        try {
+            // 设置接单中状态
+            setAcceptingOrderIds(prev => new Set(prev).add(orderId));
+            
+            const response = await postRequest("/jobTask/memberApply", {
+                job_id: record.id
+            }, true);
+            
+            if (response?.code === 200) {
+                message.success('接单成功！');
+                // 接单成功后，重新刷新页面数据和统计数据
+                await Promise.all([
+                    fetchPage(undefined, page, pageSize),
+                    fetchStatistics()
+                ]);
+            } else if (response?.code === 500) {
+                // 显示后端返回的错误信息
+                message.error(response.msg || '接单失败');
+            } else {
+                message.error('接单失败，请重试');
+            }
+        } catch (error: any) {
+            if (error?.response?.status === 401) {
+                setTokenExpired(true);
+            } else {
+                console.error('接单失败:', error);
+                message.error('接单失败，请重试');
+            }
+        } finally {
+            // 无论成功失败，都要清除接单中状态
+            setAcceptingOrderIds(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(orderId);
+                return newSet;
+            });
+        }
     };
 
     const columns = [
@@ -150,20 +236,78 @@ const LobbyPage: React.FC = () => {
         {
             title: '一键接单',
             key: 'quickAccept',
-            render: (_: any, record: JobTask) => (
-                <Button type="primary" danger size="small" onClick={() => acceptOrder(record)}>一键接单</Button>
-            )
+            render: (_: any, record: JobTask) => {
+                const isAccepting = acceptingOrderIds.has(String(record.id));
+                return (
+                    <Button 
+                        type="primary" 
+                        danger 
+                        size="small" 
+                        loading={isAccepting}
+                        disabled={isAccepting}
+                        onClick={() => acceptOrder(record)}
+                    >
+                        {isAccepting ? '接单中...' : '一键接单'}
+                    </Button>
+                );
+            }
         },
         {
             title: '操作',
             key: 'action',
             render: (_: any, record: JobTask) => (
                 <Space>
-                    <Button size="small" type="primary" ghost className="detail-btn" onClick={() => setDetailItem(record)}>详细</Button>
+                    <Button 
+                        size="small" 
+                        type="primary" 
+                        ghost 
+                        onClick={() => navigate(`/home/order-detail/${record.id}`)}
+                        style={{
+                            borderRadius: '6px',
+                            border: '1px solid #1890ff',
+                            color: '#1890ff',
+                            fontWeight: 500,
+                            boxShadow: '0 2px 4px rgba(24, 144, 255, 0.1)',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = 'translateY(-1px)';
+                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(24, 144, 255, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(24, 144, 255, 0.1)';
+                        }}
+                    >
+                        详细
+                    </Button>
                 </Space>
             )
         },
     ];
+
+    // 如果页面正在加载，显示加载状态
+    if (pageLoading) {
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '60vh',
+                flexDirection: 'column'
+            }}>
+                <Spin size="large" />
+                <div style={{
+                    fontSize: '18px',
+                    fontWeight: 500,
+                    color: '#666',
+                    marginTop: '16px'
+                }}>
+                    正在加载接单大厅数据...
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -208,7 +352,7 @@ const LobbyPage: React.FC = () => {
                             >
                                 <Statistic 
                                     title="正在接单数" 
-                                    value={acceptingOrders} 
+                                    value={acceptingOrdersCount} 
                                     valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
                                 />
                                 <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
@@ -434,8 +578,8 @@ const LobbyPage: React.FC = () => {
                 <Col span={24}>
                     <DashboardSection
                         style={{marginTop: 0}}
-                        title="订单列表"
-                        description="仅展示尚未接纳的订单"
+                        title="接单"
+                        description="仅展示待接单的任务单"
                         // 不展示 导出/新建
                     >
                         <Table
@@ -470,6 +614,12 @@ const LobbyPage: React.FC = () => {
             >
                 <pre style={{whiteSpace: 'pre-wrap'}}>{JSON.stringify(detailItem, null, 2)}</pre>
             </Modal>
+
+            {/* Token过期提示弹窗 */}
+            <TokenExpiredModal
+                visible={tokenExpired}
+                onClose={() => setTokenExpired(false)}
+            />
         </>
     );
 };

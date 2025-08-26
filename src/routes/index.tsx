@@ -11,10 +11,12 @@ import ResetSuccessPage from "@/pages/AuthFormWrapper/ResetSuccess/ResetSuccessP
 import LoginByPhone from "@/pages/AuthFormWrapper/LoginByPhone/LoginByPhonePage";
 import HomeLayout from "@/pages/Home";
 import LobbyPage from "@/pages/Home/Lobby";
+import OrderDetailPage from "@/pages/Home/Lobby/OrderDetail";
 import SettingsPage from "@/pages/Home/Settings";
 import NoticePage from "@/pages/Home/Notice";
 import SalesPage from "@/pages/Home/Sales";
 import MyOrdersPage from "@/pages/Home/Mine/Orders";
+import MyOrderDetailPage from "@/pages/Home/Mine/Orders/OrderDetail";
 import MyProfilePage from "@/pages/Home/Mine/Profile";
 import MyBillingPage from "@/pages/Home/Mine/Billing";
 import DegradedPage from "@/pages/Degraded";
@@ -38,6 +40,8 @@ const AppRouter = () => (
                     <Route path="lobby" element={<LobbyPage/>} />
                     <Route path="sales" element={<SalesPage/>} />
                 </Route>
+                <Route path="order-detail/:jobId" element={<OrderDetailPage/>} />
+                <Route path="my-order-detail/:jobId" element={<MyOrderDetailPage/>} />
                 <Route path="mine">
                     <Route index element={<Navigate to="orders" replace />} />
                     <Route path="orders" element={<MyOrdersPage/>} />

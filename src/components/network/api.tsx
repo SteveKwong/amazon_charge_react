@@ -25,6 +25,26 @@ api.interceptors.request.use(
   }
 );
 
+// 响应拦截器 - 统一处理401等错误
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token过期或无效，清除本地存储并跳转到登录页
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      
+      // 如果当前不在登录页，则跳转
+      if (window.location.pathname !== "/login" && window.location.pathname !== "/") {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // 默认请求方法封装
 export const postRequest = async (
   url: string,
