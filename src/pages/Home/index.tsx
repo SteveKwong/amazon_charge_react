@@ -162,7 +162,7 @@ const HomeLayout: React.FC = () => {
             </Sider>
             <Layout>
                 <Header style={{background: '#fff', padding: '0 16px', borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                    <Typography.Text style={{fontSize: 16, fontWeight: 600}}>Home</Typography.Text>
+                    <Typography.Text style={{fontSize: 16, fontWeight: 600}}/>
                     <Space size={12}>
                         <Button
                             icon={<ClockCircleOutlined />}

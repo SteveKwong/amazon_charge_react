@@ -34,12 +34,11 @@ const LobbyPage: React.FC = () => {
     const [cities, setCities] = useState<string[]>([]);
     const [jobTypes, setJobTypes] = useState<string[]>([]);
     const [detailItem, setDetailItem] = useState<JobTask | null>(null);
-    // 假数据（可替换为真实汇总接口）
-    const totalOrders = 6790;
-    const canceledOrders = 1230;
-    const totalAmount = 268000; // 接单金额（示例）
-    const availableQuota = 186; // 可接单数量
-    const quotaTotal = 500; // 总额度
+    // 统计数据
+    const [totalOrders, setTotalOrders] = useState<number>(0);
+    const [acceptingOrders, setAcceptingOrders] = useState<number>(0);
+    const [totalAmount, setTotalAmount] = useState<number>(0);
+    const [availableQuota, setAvailableQuota] = useState<number>(0);
 
     const initialQuery = useMemo(() => ({
         title: "",
@@ -64,12 +63,28 @@ const LobbyPage: React.FC = () => {
         }
     };
 
+    // 获取统计数据
+    const fetchStatistics = async () => {
+        try {
+            const response = await getRequest("/jobTask/taskNumPage", {}, true);
+            if (response?.code === 200 && response?.data) {
+                const { total_task_num, accepting_num, total_task_money, can_accepting_num } = response.data;
+                setTotalOrders(total_task_num || 0);
+                setAcceptingOrders(accepting_num || 0);
+                setTotalAmount(total_task_money || 0);
+                setAvailableQuota(can_accepting_num || 0);
+            }
+        } catch (error) {
+            console.error("获取统计数据失败:", error);
+        }
+    };
+
     const fetchPage = async (q?: Partial<typeof initialQuery>, p: number = page, s: number = pageSize) => {
         setLoading(true);
         try {
             const values = form.getFieldsValue();
             const payload = {
-                page: Math.max(0, p - 1),
+                page: p,
                 size: s,
                 title: values.title ?? initialQuery.title,
                 jobType: values.jobType ?? initialQuery.jobType,
@@ -113,6 +128,7 @@ const LobbyPage: React.FC = () => {
 
     useEffect(() => {
         fetchOptions();
+        fetchStatistics();
         // 初始化查询
         form.setFieldsValue(initialQuery);
         fetchPage(initialQuery, 1, pageSize);
@@ -125,7 +141,7 @@ const LobbyPage: React.FC = () => {
     };
 
     const columns = [
-        { title: '标题', dataIndex: 'title' },
+        { title: '工作类型', dataIndex: 'title' },
         { title: '岗位', dataIndex: 'jobType' },
         { title: '城市', dataIndex: 'city' },
         { title: 'HR奖励', dataIndex: 'hrBonus', render: (v: any) => v ? `¥${v}` : '-' },
@@ -191,12 +207,12 @@ const LobbyPage: React.FC = () => {
                                 bodyStyle={{ padding: '20px' }}
                             >
                                 <Statistic 
-                                    title="取消接单数" 
-                                    value={canceledOrders} 
+                                    title="正在接单数" 
+                                    value={acceptingOrders} 
                                     valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
                                 />
                                 <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
-                                    取消接单数
+                                    正在接单数
                                 </div>
                             </Card>
                         </Col>
@@ -232,12 +248,12 @@ const LobbyPage: React.FC = () => {
                                 bodyStyle={{ padding: '20px' }}
                             >
                                 <Statistic 
-                                    title="可接单数/总额" 
-                                    value={`${availableQuota}/${quotaTotal}`} 
+                                    title="可接单数" 
+                                    value={availableQuota} 
                                     valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
                                 />
                                 <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
-                                    可接单数/总额
+                                    可接单数
                                 </div>
                             </Card>
                         </Col>
@@ -274,7 +290,7 @@ const LobbyPage: React.FC = () => {
                             <Row gutter={[24, 16]}>
                                 <Col xs={24} sm={12} md={8} lg={6}>
                                     <Form.Item 
-                                        label="标题关键词" 
+                                        label="工作关键字"
                                         name="title"
                                         style={{ marginBottom: 0 }}
                                     >
@@ -301,7 +317,10 @@ const LobbyPage: React.FC = () => {
                                                 borderRadius: 8,
                                                 border: '1px solid #d9d9d9'
                                             }}
-                                            options={jobTypes.map(j => ({ value: j, label: j }))}
+                                            options={[
+                                                { value: '', label: '全部岗位' },
+                                                ...jobTypes.map(j => ({ value: j, label: j }))
+                                            ]}
                                         />
                                     </Form.Item>
                                 </Col>
@@ -318,7 +337,10 @@ const LobbyPage: React.FC = () => {
                                                 borderRadius: 8,
                                                 border: '1px solid #d9d9d9'
                                             }}
-                                            options={cities.map(c => ({ value: c, label: c }))}
+                                            options={[
+                                                { value: '', label: '全部城市' },
+                                                ...cities.map(c => ({ value: c, label: c }))
+                                            ]}
                                         />
                                     </Form.Item>
                                 </Col>
@@ -336,6 +358,7 @@ const LobbyPage: React.FC = () => {
                                                 border: '1px solid #d9d9d9'
                                             }}
                                             options={[
+                                                { value: '', label: '不排序' },
                                                 {value:'asc', label:'升序 (低→高)'},
                                                 {value:'desc', label:'降序 (高→低)'}
                                             ]}
@@ -356,50 +379,50 @@ const LobbyPage: React.FC = () => {
                                                 border: '1px solid #d9d9d9'
                                             }}
                                             options={[
+                                                { value: '', label: '不排序' },
                                                 {value:'asc', label:'升序 (低→高)'},
                                                 {value:'desc', label:'降序 (高→低)'}
                                             ]}
                                         />
                                     </Form.Item>
                                 </Col>
-                                <Col xs={24} sm={12} md={8} lg={6}>
-                                    <Form.Item 
-                                        label=" " 
-                                        style={{ marginBottom: 0, marginTop: 29 }}
-                                    >
-                                        <Space size={12}>
-                                            <Button 
-                                                type="primary" 
-                                                htmlType="submit"
-                                                style={{
-                                                    borderRadius: 8,
-                                                    height: 40,
-                                                    padding: '0 24px',
-                                                    fontWeight: 500,
-                                                    boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
-                                                }}
-                                            >
-                                                查询
-                                            </Button>
-                                            <Button 
-                                                onClick={() => { 
-                                                    form.resetFields(); 
-                                                    form.setFieldsValue(initialQuery); 
-                                                    setPage(1); 
-                                                    fetchPage(initialQuery, 1, pageSize); 
-                                                }}
-                                                style={{
-                                                    borderRadius: 8,
-                                                    height: 40,
-                                                    padding: '0 24px',
-                                                    fontWeight: 500,
-                                                    border: '1px solid #d9d9d9'
-                                                }}
-                                            >
-                                                重置
-                                            </Button>
-                                        </Space>
-                                    </Form.Item>
+                            </Row>
+                            
+                            {/* 查询重置按钮行 */}
+                            <Row style={{ marginTop: 16 }}>
+                                <Col xs={24} style={{ textAlign: 'left' }}>
+                                    <Space size={12}>
+                                        <Button 
+                                            type="primary" 
+                                            htmlType="submit"
+                                            style={{
+                                                borderRadius: 8,
+                                                height: 40,
+                                                padding: '0 24px',
+                                                fontWeight: 500,
+                                                boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
+                                            }}
+                                        >
+                                            搜索
+                                        </Button>
+                                        <Button 
+                                            onClick={() => { 
+                                                form.resetFields(); 
+                                                form.setFieldsValue(initialQuery); 
+                                                setPage(1); 
+                                                fetchPage(initialQuery, 1, pageSize); 
+                                            }}
+                                            style={{
+                                                borderRadius: 8,
+                                                height: 40,
+                                                padding: '0 24px',
+                                                fontWeight: 500,
+                                                border: '1px solid #d9d9d9'
+                                            }}
+                                        >
+                                            重置
+                                        </Button>
+                                    </Space>
                                 </Col>
                             </Row>
                         </Form>
