@@ -15,27 +15,14 @@ const LoginPage: React.FC = () => {
 
 
     useEffect(() => {
-        // 若已登录，直接跳转到 /home，避免返回到登录页
-        const token = localStorage.getItem('token');
-        if (token) {
-            // @ts-ignore
-            window.location.replace('/home');
-            return;
-        }
+        // 移除自动跳转逻辑，让用户手动选择是否登录
         const timer = setTimeout(() => {
             setLoading(false);
         }, 1000);
         return () => clearTimeout(timer); // 清理定时器以避免内存泄漏
     }, []);
 
-    const [loaded, setLoaded] = useState(false);
-
-    useEffect(() => {
-        const img = new Image();
-        // @ts-ignore
-        img.src = {wallpaper};
-        img.onload = () => setLoaded(true);
-    }, []);
+    // 移除未使用的图片加载逻辑，因为图片在Wall组件中处理
 
 
     const footerStyle: React.CSSProperties = {

@@ -161,132 +161,252 @@ const LobbyPage: React.FC = () => {
                 <Col xs={24}>
                     <Row gutter={[16,16]}>
                         <Col xs={24} sm={12} md={6}>
-                            <Card bordered={false} style={{borderRadius: 12}}>
-                                <Statistic title="总接单数" value={totalOrders} />
+                            <Card 
+                                bordered={false} 
+                                style={{
+                                    borderRadius: 12,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                                }}
+                                bodyStyle={{ padding: '20px' }}
+                            >
+                                <Statistic 
+                                    title="总接单数" 
+                                    value={totalOrders} 
+                                    valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
+                                />
+                                <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
+                                    总接单数
+                                </div>
                             </Card>
                         </Col>
                         <Col xs={24} sm={12} md={6}>
-                            <Card bordered={false} style={{borderRadius: 12}}>
-                                <Statistic title="取消接单数" value={canceledOrders} />
+                            <Card 
+                                bordered={false} 
+                                style={{
+                                    borderRadius: 12,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+                                }}
+                                bodyStyle={{ padding: '20px' }}
+                            >
+                                <Statistic 
+                                    title="取消接单数" 
+                                    value={canceledOrders} 
+                                    valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
+                                />
+                                <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
+                                    取消接单数
+                                </div>
                             </Card>
                         </Col>
                         <Col xs={24} sm={12} md={6}>
-                            <Card bordered={false} style={{borderRadius: 12}}>
-                                <Statistic title="接单金额(¥)" value={totalAmount} precision={0} />
+                            <Card 
+                                bordered={false} 
+                                style={{
+                                    borderRadius: 12,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                                    background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                                }}
+                                bodyStyle={{ padding: '20px' }}
+                            >
+                                <Statistic 
+                                    title="接单金额(¥)" 
+                                    value={totalAmount} 
+                                    precision={0}
+                                    valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
+                                />
+                                <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
+                                    接单金额(¥)
+                                </div>
                             </Card>
                         </Col>
                         <Col xs={24} sm={12} md={6}>
-                            <Card bordered={false} style={{borderRadius: 12}}>
-                                <Statistic title="可接单数/总额" value={`${availableQuota}/${quotaTotal}`} />
+                            <Card 
+                                bordered={false} 
+                                style={{
+                                    borderRadius: 12,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                                    background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                                }}
+                                bodyStyle={{ padding: '20px' }}
+                            >
+                                <Statistic 
+                                    title="可接单数/总额" 
+                                    value={`${availableQuota}/${quotaTotal}`} 
+                                    valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
+                                />
+                                <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
+                                    可接单数/总额
+                                </div>
                             </Card>
                         </Col>
                     </Row>
                 </Col>
 
                 <Col span={24}>
-                    <Card bordered={false} style={{borderRadius: 12}}>
-                        <Form layout="inline" form={form} onFinish={() => { setPage(1); fetchPage(undefined, 1, pageSize); }}>
-                            <Form.Item label="标题" name="title">
-                                <Input allowClear style={{ width: 200 }} placeholder="输入关键词" />
-                            </Form.Item>
-                            <Form.Item label="岗位" name="jobType">
-                                <Select allowClear style={{ width: 180 }} placeholder="选择岗位"
-                                        options={jobTypes.map(j => ({ value: j, label: j }))}
-                                />
-                            </Form.Item>
-                            <Form.Item label="城市" name="city">
-                                <Select allowClear style={{ width: 180 }} placeholder="选择城市"
-                                        options={cities.map(c => ({ value: c, label: c }))}
-                                />
-                            </Form.Item>
-                            <Form.Item label="HR奖励排序" name="sortHrBonus">
-                                <Select allowClear style={{ width: 160 }} placeholder="选择排序"
-                                        options={[{value:'asc',label:'升序'},{value:'desc',label:'降序'}]}
-                                />
-                            </Form.Item>
-                            <Form.Item label="服务费排序" name="sortServiceFee">
-                                <Select allowClear style={{ width: 160 }} placeholder="选择排序"
-                                        options={[{value:'asc',label:'升序'},{value:'desc',label:'降序'}]}
-                                />
-                            </Form.Item>
-                            <Form.Item>
-                                <Space>
-                                    <Button type="primary" htmlType="submit">查询</Button>
-                                    <Button onClick={() => { form.resetFields(); form.setFieldsValue(initialQuery); setPage(1); fetchPage(initialQuery, 1, pageSize); }}>重置</Button>
-                                </Space>
-                            </Form.Item>
+                    <Card 
+                        bordered={false} 
+                        style={{
+                            borderRadius: 12,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                        }}
+                        title={
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 8,
+                                fontSize: '16px',
+                                fontWeight: 600,
+                                color: '#262626'
+                            }}>
+                                <span>🔍</span>
+                                <span>筛选条件</span>
+                            </div>
+                        }
+                    >
+                        <Form 
+                            layout="vertical" 
+                            form={form} 
+                            onFinish={() => { setPage(1); fetchPage(undefined, 1, pageSize); }}
+                            style={{ marginTop: 8 }}
+                        >
+                            <Row gutter={[24, 16]}>
+                                <Col xs={24} sm={12} md={8} lg={6}>
+                                    <Form.Item 
+                                        label="标题关键词" 
+                                        name="title"
+                                        style={{ marginBottom: 0 }}
+                                    >
+                                        <Input 
+                                            allowClear 
+                                            placeholder="输入关键词搜索" 
+                                            style={{ 
+                                                borderRadius: 8,
+                                                border: '1px solid #d9d9d9'
+                                            }}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12} md={8} lg={6}>
+                                    <Form.Item 
+                                        label="岗位类型" 
+                                        name="jobType"
+                                        style={{ marginBottom: 0 }}
+                                    >
+                                        <Select 
+                                            allowClear 
+                                            placeholder="选择岗位类型"
+                                            style={{ 
+                                                borderRadius: 8,
+                                                border: '1px solid #d9d9d9'
+                                            }}
+                                            options={jobTypes.map(j => ({ value: j, label: j }))}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12} md={8} lg={6}>
+                                    <Form.Item 
+                                        label="城市地区" 
+                                        name="city"
+                                        style={{ marginBottom: 0 }}
+                                    >
+                                        <Select 
+                                            allowClear 
+                                            placeholder="选择城市地区"
+                                            style={{ 
+                                                borderRadius: 8,
+                                                border: '1px solid #d9d9d9'
+                                            }}
+                                            options={cities.map(c => ({ value: c, label: c }))}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12} md={8} lg={6}>
+                                    <Form.Item 
+                                        label="HR奖励排序" 
+                                        name="sortHrBonus"
+                                        style={{ marginBottom: 0 }}
+                                    >
+                                        <Select 
+                                            allowClear 
+                                            placeholder="选择排序方式"
+                                            style={{ 
+                                                borderRadius: 8,
+                                                border: '1px solid #d9d9d9'
+                                            }}
+                                            options={[
+                                                {value:'asc', label:'升序 (低→高)'},
+                                                {value:'desc', label:'降序 (高→低)'}
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12} md={8} lg={6}>
+                                    <Form.Item 
+                                        label="服务费排序" 
+                                        name="sortServiceFee"
+                                        style={{ marginBottom: 0 }}
+                                    >
+                                        <Select 
+                                            allowClear 
+                                            placeholder="选择排序方式"
+                                            style={{ 
+                                                borderRadius: 8,
+                                                border: '1px solid #d9d9d9'
+                                            }}
+                                            options={[
+                                                {value:'asc', label:'升序 (低→高)'},
+                                                {value:'desc', label:'降序 (高→低)'}
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12} md={8} lg={6}>
+                                    <Form.Item 
+                                        label=" " 
+                                        style={{ marginBottom: 0, marginTop: 29 }}
+                                    >
+                                        <Space size={12}>
+                                            <Button 
+                                                type="primary" 
+                                                htmlType="submit"
+                                                style={{
+                                                    borderRadius: 8,
+                                                    height: 40,
+                                                    padding: '0 24px',
+                                                    fontWeight: 500,
+                                                    boxShadow: '0 2px 4px rgba(24, 144, 255, 0.2)'
+                                                }}
+                                            >
+                                                查询
+                                            </Button>
+                                            <Button 
+                                                onClick={() => { 
+                                                    form.resetFields(); 
+                                                    form.setFieldsValue(initialQuery); 
+                                                    setPage(1); 
+                                                    fetchPage(initialQuery, 1, pageSize); 
+                                                }}
+                                                style={{
+                                                    borderRadius: 8,
+                                                    height: 40,
+                                                    padding: '0 24px',
+                                                    fontWeight: 500,
+                                                    border: '1px solid #d9d9d9'
+                                                }}
+                                            >
+                                                重置
+                                            </Button>
+                                        </Space>
+                                    </Form.Item>
+                                </Col>
+                            </Row>
                         </Form>
                     </Card>
                 </Col>
 
-                <Col xs={24} md={16}>
-                    <Card bordered={false} style={{borderRadius: 12}} title="按城市销量（示例）">
-                        <EChart
-                            style={{height: 280}}
-                            option={{
-                                tooltip: { trigger: 'axis' },
-                                grid: { left: 24, right: 12, top: 24, bottom: 24 },
-                                xAxis: { type: 'category', data: ['上海','北京','广州','深圳','杭州','成都','重庆'] },
-                                yAxis: { type: 'value' },
-                                legend: { data: ['接单','取消'] },
-                                series: [
-                                    { name: '接单', type: 'bar', data: [95, 70, 66, 58, 48, 42, 36], itemStyle: { color: '#057a55' } },
-                                    { name: '取消', type: 'bar', data: [42, 22, 18, 15, 12, 10, 9], itemStyle: { color: '#f59e0b' } },
-                                ]
-                            }}
-                        />
-                    </Card>
-                </Col>
 
-                <Col xs={24} md={8}>
-                    <Card bordered={false} style={{borderRadius: 12}} title="可接单比例（示例）">
-                        <EChart
-                            style={{height: 280}}
-                            option={{
-                                series: [
-                                    {
-                                        type: 'pie',
-                                        radius: ['60%','85%'],
-                                        avoidLabelOverlap: false,
-                                        label: { show: true, position: 'center', formatter: `{b}\n{c}` },
-                                        data: [
-                                            { value: availableQuota, name: '可接单' },
-                                            { value: Math.max(0, quotaTotal - availableQuota), name: '剩余额度' },
-                                        ],
-                                        color: ['#10b981','#e5e7eb']
-                                    }
-                                ]
-                            }}
-                        />
-                    </Card>
-                </Col>
-
-                <Col xs={24}>
-                    <Card bordered={false} style={{borderRadius: 12}} title="按岗位分布（示例）">
-                        <EChart
-                            style={{height: 280}}
-                            option={{
-                                tooltip: { trigger: 'item' },
-                                legend: { top: 'bottom' },
-                                series: [
-                                    {
-                                        type: 'pie',
-                                        radius: ['40%','70%'],
-                                        label: { formatter: '{b}: {d}%' },
-                                        data: [
-                                            { value: 38, name: '外卖' },
-                                            { value: 22, name: '仓储' },
-                                            { value: 18, name: '配送' },
-                                            { value: 12, name: '代驾' },
-                                            { value: 10, name: '其他' }
-                                        ],
-                                        color: ['#16a34a','#06b6d4','#f59e0b','#ef4444','#6366f1']
-                                    }
-                                ]
-                            }}
-                        />
-                    </Card>
-                </Col>
 
                 <Col span={24}>
                     <DashboardSection

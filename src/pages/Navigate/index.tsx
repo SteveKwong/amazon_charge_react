@@ -1,7 +1,7 @@
 import React from 'react';
 import {Layout, Menu} from 'antd';
 import './index.scss'; // 用于定义样式
-import logo from '../../components/icon.png';
+import logo from '@/components/icon.png';
 
 
 const {Header} = Layout;

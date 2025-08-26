@@ -111,7 +111,7 @@ const JobDisplay = () => {
     return (
         <div style={{
             padding: "40px",
-            backgroundImage: "url('../../../components/Law Firm Website in Gold Blue Sleek Corporate Style (5).png"
+            backgroundImage: "url('../../../components/Law Firm Website in Gold Blue Sleek Corporate Style (5).png')"
         }}>
             <h2
                 style={{

@@ -15,18 +15,66 @@ const MyOrdersPage: React.FC = () => {
 
             <Row gutter={[16, 16]}>
                 <Col xs={24} md={8}>
-                    <Card bordered={false} style={{borderRadius: 12}}>
-                        <Statistic title="今日新单" value={12} suffix="单" />
+                    <Card 
+                        bordered={false} 
+                        style={{
+                            borderRadius: 12,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        }}
+                        bodyStyle={{ padding: '20px' }}
+                    >
+                        <Statistic 
+                            title="今日新单" 
+                            value={12} 
+                            suffix="单"
+                            valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
+                        />
+                        <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
+                            今日新单
+                        </div>
                     </Card>
                 </Col>
                 <Col xs={24} md={8}>
-                    <Card bordered={false} style={{borderRadius: 12}}>
-                        <Statistic title="进行中" value={5} suffix="单" />
+                    <Card 
+                        bordered={false} 
+                        style={{
+                            borderRadius: 12,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                            background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                        }}
+                        bodyStyle={{ padding: '20px' }}
+                    >
+                        <Statistic 
+                            title="进行中" 
+                            value={5} 
+                            suffix="单"
+                            valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
+                        />
+                        <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
+                            进行中
+                        </div>
                     </Card>
                 </Col>
                 <Col xs={24} md={8}>
-                    <Card bordered={false} style={{borderRadius: 12}}>
-                        <Statistic title="已完成" value={36} suffix="单" />
+                    <Card 
+                        bordered={false} 
+                        style={{
+                            borderRadius: 12,
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                            background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                        }}
+                        bodyStyle={{ padding: '20px' }}
+                    >
+                        <Statistic 
+                            title="已完成" 
+                            value={36} 
+                            suffix="单"
+                            valueStyle={{ color: '#fff', fontSize: '28px', fontWeight: 600 }}
+                        />
+                        <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '14px', marginTop: 8 }}>
+                            已完成
+                        </div>
                     </Card>
                 </Col>
             </Row>
@@ -35,7 +83,7 @@ const MyOrdersPage: React.FC = () => {
                 style={{marginTop: 16}}
                 title="订单列表"
                 description="最近接单概览"
-                extra={<Space><Button>导出</Button><Button type="primary">新建</Button></Space>}
+                extra={<Button>导出</Button>}
             >
                 <Table
                     rowKey="id"

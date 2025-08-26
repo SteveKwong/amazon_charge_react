@@ -24,8 +24,11 @@ import AuthGuard from "@/components/AuthGuard";
 const AppRouter = () => (
     <Router>
         <Routes>
-            <Route path="*" element={<NotExist/>}/> {/* 捕获所有其他路径 */}
+            {/* 根路径始终指向登录页面 */}
+            <Route path="/" element={<LoginPage/>}/>
             <Route path="/login" element={<LoginPage/>}/>
+            
+            {/* 需要认证的路由 */}
             <Route path="/home" element={<AuthGuard><HomeLayout/></AuthGuard>}>
                 <Route index element={<Navigate to="order-hall/notice" replace />} />
                 <Route path="lobby" element={<Navigate to="order-hall/notice" replace />} />
@@ -43,7 +46,8 @@ const AppRouter = () => (
                 </Route>
                 <Route path="settings" element={<SettingsPage/>} />
             </Route>
-            <Route path="/" element={<LoginPage/>}/>
+            
+            {/* 其他公共路由 */}
             <Route path="/wall" element={<Wall/>}/>
             <Route path="/forget-password" element={<ForgetPasswordPage/>}/>
             <Route path="/verify-user-code" element={<VerifyUserCodePage/>}/>
@@ -52,6 +56,9 @@ const AppRouter = () => (
             <Route path="/reset-success" element={<ResetSuccessPage/>}/>
             <Route path="/loginbyphone" element={<LoginByPhone/>}/>
             <Route path="/degraded" element={<DegradedPage/>}/>
+            
+            {/* 捕获所有其他路径 */}
+            <Route path="*" element={<NotExist/>}/>
         </Routes>
     </Router>
 );

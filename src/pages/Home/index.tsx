@@ -1,15 +1,17 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {Avatar, Button, Dropdown, Layout, Menu, Space, Typography} from "antd";
-import { ClockCircleOutlined, AppstoreOutlined, NotificationOutlined, ShoppingOutlined, BarChartOutlined, UserOutlined, FileTextOutlined, ProfileOutlined, CreditCardOutlined } from "@ant-design/icons";
+import { ClockCircleOutlined, AppstoreOutlined, NotificationOutlined, ShoppingOutlined, BarChartOutlined, UserOutlined, FileTextOutlined, ProfileOutlined, CreditCardOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import RightActionBar from "@/components/RightActionBar";
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
+import companyIcon from "@/components/icon.png";
 
 const { Header, Sider, Content } = Layout;
 
 const HomeLayout: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [collapsed, setCollapsed] = useState<boolean>(false);
 
     const selectedKeys = useMemo(() => {
         if (location.pathname.startsWith("/home/order-hall/notice")) return ["order-hall:notice"];
@@ -55,14 +57,94 @@ const HomeLayout: React.FC = () => {
         return () => window.removeEventListener('popstate', guard);
     }, []);
 
+    // 扁平化菜单项（当折叠时）
+    const getFlatMenuItems = () => {
+        if (!collapsed) {
+            return [
+                {
+                    key: 'order-hall',
+                    label: '大厅',
+                    icon: <AppstoreOutlined />,
+                    children: [
+                        { key: 'order-hall:notice', label: '公告', icon: <NotificationOutlined /> },
+                        { key: 'order-hall:lobby', label: '接单大厅', icon: <ShoppingOutlined /> },
+                        { key: 'order-hall:sales', label: '销量展示', icon: <BarChartOutlined /> },
+                    ],
+                },
+                {
+                    key: 'mine',
+                    label: '我的',
+                    icon: <UserOutlined />,
+                    children: [
+                        { key: 'mine:orders', label: '我的接单', icon: <FileTextOutlined /> },
+                        { key: 'mine:profile', label: '个人信息', icon: <ProfileOutlined /> },
+                        { key: 'mine:billing', label: '我的账单', icon: <CreditCardOutlined /> },
+                    ],
+                },
+            ];
+        } else {
+            // 扁平化显示，只显示图标
+            return [
+                { key: 'order-hall:notice', label: '', icon: <NotificationOutlined />, title: '公告' },
+                { key: 'order-hall:lobby', label: '', icon: <ShoppingOutlined />, title: '接单大厅' },
+                { key: 'order-hall:sales', label: '', icon: <BarChartOutlined />, title: '销量展示' },
+                { key: 'mine:orders', label: '', icon: <FileTextOutlined />, title: '我的接单' },
+                { key: 'mine:profile', label: '', icon: <ProfileOutlined />, title: '个人信息' },
+                { key: 'mine:billing', label: '', icon: <CreditCardOutlined />, title: '我的账单' },
+            ];
+        }
+    };
+
     return (
         <Layout style={{minHeight: '100vh'}}>
-            <Sider width={220} theme="light" style={{backgroundColor: '#e3f1f1'}} className="custom-sider">
-                <div style={{height: 48, margin: 16, color: '#000', fontWeight: 600}}>控制台</div>
+            <Sider 
+                width={collapsed ? 80 : 220} 
+                theme="light" 
+                style={{backgroundColor: '#e3f1f1'}} 
+                className="custom-sider"
+                collapsed={collapsed}
+                collapsedWidth={80}
+            >
+                <div style={{
+                    height: 48, 
+                    margin: 16, 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: collapsed ? 'center' : 'flex-start'
+                }}>
+                    <img 
+                        src={companyIcon} 
+                        alt="公司Logo" 
+                        style={{
+                            height: collapsed ? '32px' : '40px',
+                            width: 'auto',
+                            objectFit: 'contain'
+                        }}
+                    />
+                </div>
+                
+                {/* 缩放按钮 */}
+                <div style={{
+                    padding: '0 16px 16px 16px',
+                    textAlign: collapsed ? 'center' : 'right'
+                }}>
+                    <Button
+                        type="text"
+                        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                        onClick={() => setCollapsed(!collapsed)}
+                        style={{
+                            color: '#666',
+                            border: 'none',
+                            background: 'transparent'
+                        }}
+                        title={collapsed ? '展开' : '收起'}
+                    />
+                </div>
+
                 <Menu
                     theme="light"
                     mode="inline"
-                    defaultOpenKeys={defaultOpenKeys}
+                    defaultOpenKeys={collapsed ? [] : defaultOpenKeys}
                     selectedKeys={selectedKeys}
                     onClick={(info) => {
                         if (info.key === 'order-hall:notice') navigate('/home/order-hall/notice');
@@ -72,30 +154,10 @@ const HomeLayout: React.FC = () => {
                         if (info.key === 'mine:profile') navigate('/home/mine/profile');
                         if (info.key === 'mine:billing') navigate('/home/mine/billing');
                     }}
-                    items={[
-                        {
-                            key: 'order-hall',
-                            label: '大厅',
-                            icon: <AppstoreOutlined />,
-                            children: [
-                                { key: 'order-hall:notice', label: '公告', icon: <NotificationOutlined /> },
-                                { key: 'order-hall:lobby', label: '接单大厅', icon: <ShoppingOutlined /> },
-                                { key: 'order-hall:sales', label: '销量展示', icon: <BarChartOutlined /> },
-                            ],
-                        },
-                        {
-                            key: 'mine',
-                            label: '我的',
-                            icon: <UserOutlined />,
-                            children: [
-                                { key: 'mine:orders', label: '我的接单', icon: <FileTextOutlined /> },
-                                { key: 'mine:profile', label: '个人信息', icon: <ProfileOutlined /> },
-                                { key: 'mine:billing', label: '我的账单', icon: <CreditCardOutlined /> },
-                            ],
-                        },
-                    ]}
+                    items={getFlatMenuItems()}
                     style={{backgroundColor: '#e3f1f1'}}
                     className="fun-menu"
+                    inlineCollapsed={collapsed}
                 />
             </Sider>
             <Layout>
@@ -169,6 +231,17 @@ const HomeLayout: React.FC = () => {
                 border-right: none !important; /* 去掉默认高亮边条 */
               }
 
+              /* 折叠状态下的样式 */
+              .custom-sider.ant-layout-sider-collapsed .ant-menu-item {
+                text-align: center;
+                padding: 0 !important;
+              }
+              
+              .custom-sider.ant-layout-sider-collapsed .ant-menu-item .anticon {
+                font-size: 18px;
+                margin: 0 !important;
+              }
+
               /* 点击水纹波浪效果 */
               .fun-menu .ant-menu-item:active::after {
                 content: '';
@@ -185,6 +258,15 @@ const HomeLayout: React.FC = () => {
               @keyframes ripple {
                 from { width: 0; height: 0; opacity: 0.6; }
                 to   { width: 220px; height: 220px; opacity: 0; }
+              }
+              
+              /* 折叠状态下的水纹效果调整 */
+              .custom-sider.ant-layout-sider-collapsed .fun-menu .ant-menu-item:active::after {
+                animation: ripple-collapsed .45s ease-out forwards;
+              }
+              @keyframes ripple-collapsed {
+                from { width: 0; height: 0; opacity: 0.6; }
+                to   { width: 80px; height: 80px; opacity: 0; }
               }
             `}</style>
         </Layout>

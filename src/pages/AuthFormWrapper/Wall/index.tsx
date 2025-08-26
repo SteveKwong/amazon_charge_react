@@ -3,7 +3,7 @@ import './index.scss'
 import {Button} from "antd";
 import {useNavigate} from "react-router-dom";
 import JobDisplay from "@/pages/AuthFormWrapper/JobDisplay/index";
-import wallpaper2 from "../../../components/Law Firm Website in Gold Blue Sleek Corporate Style (3).png";
+import wallpaper2 from "@/components/Law Firm Website in Gold Blue Sleek Corporate Style (3).png";
 
 
 interface BackgroundProps {
