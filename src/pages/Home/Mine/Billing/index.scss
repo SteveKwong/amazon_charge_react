@@ -1,0 +1,538 @@
+.financial-dashboard {
+  background: #f8f9fa;
+  min-height: 100vh;
+  padding: 24px;
+
+  .ant-card {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    
+    &:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+  }
+
+  // 当前余额主卡片（替换原来的Total balance）
+  .current-balance-main-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin-bottom: 24px;
+    
+    .balance-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      
+      .balance-info {
+        .balance-label {
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 14px;
+          font-weight: 500;
+          margin-bottom: 8px;
+          display: block;
+        }
+        
+        .balance-amount {
+          display: flex;
+          align-items: baseline;
+          
+          .amount {
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: 700;
+            margin-right: 8px;
+          }
+          
+          .currency {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+          }
+        }
+      }
+      
+      .balance-actions {
+        display: flex;
+        gap: 12px;
+        
+        .action-btn {
+          height: 44px;
+          border-radius: 22px;
+          font-weight: 600;
+          font-size: 14px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.1);
+          color: #ffffff;
+          backdrop-filter: blur(10px);
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-1px);
+          }
+          
+          &.recharge-btn {
+            background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+            border-color: transparent;
+            
+            &:hover {
+              background: linear-gradient(135deg, #389e0d 0%, #237804 100%);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 收入和支出卡片
+  .income-card,
+  .expense-card {
+    height: 120px;
+    
+    .card-content {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      position: relative;
+      
+      .icon-section {
+        margin-right: 20px;
+        
+        .icon-circle {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          color: #ffffff;
+          
+          &.income-icon {
+            background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+          }
+          
+          &.expense-icon {
+            background: linear-gradient(135deg, #fa8c16 0%, #d46b08 100%);
+          }
+        }
+      }
+      
+      .text-section {
+        flex: 1;
+        
+        .card-label {
+          color: #8c8c8c;
+          font-size: 14px;
+          font-weight: 500;
+          margin-bottom: 8px;
+          display: block;
+        }
+        
+        .card-amount {
+          color: #262626;
+          font-size: 24px;
+          font-weight: 700;
+        }
+      }
+      
+      .change-tag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        
+        .change-tag-content {
+          border-radius: 20px;
+          font-weight: 600;
+          font-size: 12px;
+          padding: 4px 12px;
+          border: none;
+          
+          &.ant-tag-success {
+            background: #f6ffed;
+            color: #52c41a;
+          }
+          
+          &.ant-tag-error {
+            background: #fff2f0;
+            color: #ff4d4f;
+          }
+        }
+      }
+    }
+  }
+
+  // 图表卡片
+  .chart-card {
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      
+      .chart-title {
+        margin: 0;
+        color: #262626;
+        font-weight: 600;
+      }
+      
+      .chart-type-selector {
+        display: flex;
+        gap: 8px;
+        
+        .chart-btn {
+          border-radius: 20px;
+          height: 36px;
+          padding: 0 16px;
+          font-weight: 500;
+          
+          &.ant-btn-primary {
+            background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+            border: none;
+            box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+            
+            &:hover {
+              background: linear-gradient(135deg, #096dd9 0%, #0050b3 100%);
+              transform: translateY(-1px);
+            }
+          }
+          
+          &:not(.ant-btn-primary) {
+            border: 1px solid #e8e8e8;
+            color: #666;
+            
+            &:hover {
+              border-color: #1890ff;
+              color: #1890ff;
+            }
+          }
+        }
+      }
+    }
+    
+    .chart-container {
+      height: 300px;
+    }
+  }
+
+  // 收支清单卡片
+  .transaction-list-card {
+    margin-top: 24px;
+    
+    .list-title {
+      margin: 0 0 20px 0;
+      color: #262626;
+      font-weight: 600;
+    }
+    
+    .ant-table {
+      .ant-table-thead > tr > th {
+        background: #fafafa;
+        font-weight: 600;
+        color: #262626;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      
+      .ant-table-tbody > tr > td {
+        border-bottom: 1px solid #f5f5f5;
+      }
+      
+      .ant-table-tbody > tr:hover > td {
+        background: #f5f5f5;
+      }
+    }
+  }
+
+  // 右侧统计卡片
+  .stats-card {
+    .stats-header {
+      margin-bottom: 20px;
+      
+      .stats-title {
+        margin: 0;
+        color: #262626;
+        font-weight: 600;
+      }
+    }
+    
+    .stats-content {
+      .stat-item {
+        text-align: center;
+        padding: 16px 0;
+        
+        .stat-label {
+          color: #8c8c8c;
+          font-size: 14px;
+          font-weight: 500;
+          margin-bottom: 8px;
+          display: block;
+        }
+        
+        .stat-value {
+          font-size: 24px;
+          font-weight: 700;
+          margin-bottom: 8px;
+          display: block;
+          
+          &.income {
+            color: #52c41a;
+          }
+          
+          &.expense {
+            color: #fa8c16;
+          }
+          
+          &.net-income {
+            color: #1890ff;
+          }
+        }
+        
+        .stat-change {
+          font-size: 12px;
+          font-weight: 600;
+          
+          &.positive {
+            color: #52c41a;
+          }
+          
+          &.negative {
+            color: #ff4d4f;
+          }
+        }
+      }
+      
+      .ant-divider {
+        margin: 0;
+        border-color: #f0f0f0;
+      }
+    }
+  }
+
+  // 提现模态框
+  .withdraw-modal {
+    .ant-modal-content {
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    
+    .withdraw-overlay {
+      .payment-methods {
+        margin-bottom: 24px;
+        
+        .method-section {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px;
+          border: 2px solid #f0f0f0;
+          border-radius: 12px;
+          margin-bottom: 16px;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            border-color: #1890ff;
+            background: #f6ffed;
+          }
+          
+          .method-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            
+            .method-icon {
+              font-size: 24px;
+              
+              &.wechat {
+                color: #52c41a;
+              }
+              
+              &.alipay {
+                color: #1890ff;
+              }
+            }
+            
+            .method-name {
+              font-size: 16px;
+              font-weight: 600;
+              color: #262626;
+            }
+          }
+          
+          .method-radio {
+            .ant-radio-inner {
+              border-color: #d9d9d9;
+              
+              &:hover {
+                border-color: #1890ff;
+              }
+            }
+            
+            .ant-radio-checked .ant-radio-inner {
+              border-color: #1890ff;
+              background: #1890ff;
+            }
+          }
+        }
+      }
+      
+      .fee-info {
+        background: #f8f9fa;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+        
+        .fee-label {
+          color: #8c8c8c;
+          font-size: 14px;
+          margin-bottom: 12px;
+          display: block;
+        }
+        
+        .fee-calculation {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          
+          .ant-typography {
+            color: #666;
+            font-size: 14px;
+            
+            &.actual-amount {
+              color: #52c41a;
+              font-weight: 600;
+              font-size: 16px;
+            }
+          }
+        }
+      }
+      
+      .confirm-withdraw-btn {
+        background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+        border: none;
+        height: 44px;
+        border-radius: 22px;
+        font-weight: 600;
+        
+        &:hover {
+          background: linear-gradient(135deg, #096dd9 0%, #0050b3 100%);
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+
+  // 充值模态框
+  .recharge-modal {
+    .ant-modal-content {
+      border-radius: 16px;
+      overflow: hidden;
+    }
+  }
+
+  // 响应式设计
+  @media (max-width: 1200px) {
+    .current-balance-main-card {
+      .balance-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        
+        .balance-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    
+    .ant-row {
+      .ant-col {
+        margin-bottom: 16px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+    
+    .current-balance-main-card {
+      .balance-header {
+        .balance-info {
+          .balance-amount {
+            .amount {
+              font-size: 28px;
+            }
+            
+            .currency {
+              font-size: 20px;
+            }
+          }
+        }
+        
+        .balance-actions {
+          flex-direction: column;
+          gap: 8px;
+          
+          .action-btn {
+            width: 100%;
+          }
+        }
+      }
+    }
+    
+    .income-card,
+    .expense-card {
+      height: auto;
+      min-height: 100px;
+      
+      .card-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+        
+        .icon-section {
+          margin-right: 0;
+        }
+        
+        .change-tag {
+          position: static;
+          margin-top: 8px;
+        }
+      }
+    }
+    
+    .chart-card {
+      .chart-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+        
+        .chart-type-selector {
+          width: 100%;
+          
+          .chart-btn {
+            flex: 1;
+          }
+        }
+      }
+    }
+    
+    .stats-card {
+      .stats-content {
+        .stat-item {
+          .stat-value {
+            font-size: 20px;
+          }
+        }
+      }
+    }
+  }
+}
