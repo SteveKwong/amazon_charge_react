@@ -434,7 +434,7 @@ const LobbyPage: React.FC = () => {
                             <Row gutter={[24, 16]}>
                                 <Col xs={24} sm={12} md={8} lg={6}>
                                     <Form.Item 
-                                        label="工作关键字"
+                                        label="工作类型"
                                         name="title"
                                         style={{ marginBottom: 0 }}
                                     >

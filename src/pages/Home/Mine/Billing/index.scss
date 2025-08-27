@@ -275,34 +275,77 @@
         font-weight: 600;
       }
       
-      .chart-type-selector {
+      .chart-controls {
         display: flex;
-        gap: 8px;
+        align-items: center;
+        gap: 16px;
         
-        .chart-btn {
-          border-radius: 20px;
-          height: 36px;
-          padding: 0 16px;
-          font-weight: 500;
+        .date-range-picker {
+          display: flex;
+          align-items: center;
           
-          &.ant-btn-primary {
-            background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-            border: none;
-            box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
-            
-            &:hover {
-              background: linear-gradient(135deg, #096dd9 0%, #0050b3 100%);
-              transform: translateY(-1px);
-            }
-          }
-          
-          &:not(.ant-btn-primary) {
+          .ant-picker {
+            border-radius: 8px;
             border: 1px solid #e8e8e8;
-            color: #666;
             
             &:hover {
               border-color: #1890ff;
-              color: #1890ff;
+            }
+            
+            &.ant-picker-focused {
+              border-color: #1890ff;
+              box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+            }
+          }
+        }
+        
+        .refresh-btn {
+          border-radius: 8px;
+          height: 36px;
+          padding: 0 16px;
+          font-weight: 500;
+          border: 1px solid #e8e8e8;
+          color: #666;
+          
+          &:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+          }
+          
+          &:active {
+            transform: scale(0.98);
+          }
+        }
+        
+        .chart-type-selector {
+          display: flex;
+          gap: 8px;
+          
+          .chart-btn {
+            border-radius: 20px;
+            height: 36px;
+            padding: 0 16px;
+            font-weight: 500;
+            
+            &.ant-btn-primary {
+              background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+              border: none;
+              box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+              
+              &:hover {
+                background: linear-gradient(135deg, #096dd9 0%, #0050b3 100%);
+                transform: translateY(-1px);
+              }
+            }
+            
+            &:not(.ant-btn-primary) {
+              border: 1px solid #e8e8e8;
+              color: #666;
+              
+              &:hover {
+                border-color: #1890ff;
+                color: #1890ff;
+              }
             }
           }
         }

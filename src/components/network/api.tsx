@@ -2,7 +2,8 @@ import axios from "axios";
 
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/jinx/", // 你的 API 地址
+  baseURL: "http://localhost:8000/jinx/", // 你的 API 地址
+  // baseURL: "http://127.0.0.1:8000/jinx/", // 你的 API 地址
   // baseURL: "http://124.222.225.192:8000/jinx/", // 你的 API 地址
   headers: {
     "Content-Type": "application/json",

@@ -320,7 +320,7 @@ const OrderDetailPage: React.FC = () => {
               }}>
                 <div style={{ fontSize: '16px', marginBottom: '8px' }}>短期结算</div>
                 <div style={{ fontSize: '20px', fontWeight: 600 }}>
-                  {orderDetail.short_term_settlement_work_day}天 · {orderDetail.short_term_percent}
+                  {orderDetail.short_term_settlement_work_day}天 {orderDetail.short_term_percent}
                 </div>
                 <div style={{ fontSize: '18px', marginTop: '8px' }}>
                   ¥{orderDetail.short_term_settlement_amount}
@@ -337,7 +337,7 @@ const OrderDetailPage: React.FC = () => {
             }}>
               <div style={{ fontSize: '16px', marginBottom: '8px' }}>长期结算</div>
               <div style={{ fontSize: '20px', fontWeight: 600 }}>
-                {orderDetail.long_term_settlement_work_day}天 · {orderDetail.long_term_percent}
+                {orderDetail.long_term_settlement_work_day}天 {orderDetail.long_term_percent}
               </div>
               <div style={{ fontSize: '18px', marginTop: '8px' }}>
                 ¥{orderDetail.long_term_settlement_amount}

@@ -39,6 +39,22 @@ const MyOrdersPage: React.FC = () => {
     const [myJobData, setMyJobData] = useState<MyJobData | null>(null);
     const [error, setError] = useState<string | null>(null);
     
+    // 错误消息防重复显示
+    const [lastErrorMessage, setLastErrorMessage] = useState<string>('');
+    const [lastErrorTime, setLastErrorTime] = useState<number>(0);
+    
+    // 统一的错误处理函数
+    const showErrorOnce = (errorMessage: string) => {
+        const now = Date.now();
+        // 如果相同错误消息在3秒内重复出现，则不显示
+        if (errorMessage === lastErrorMessage && now - lastErrorTime < 3000) {
+            return;
+        }
+        setLastErrorMessage(errorMessage);
+        setLastErrorTime(now);
+        message.error(errorMessage);
+    };
+    
     // 订单列表相关状态
     const [orderList, setOrderList] = useState<OrderItem[]>([]);
     const [orderLoading, setOrderLoading] = useState(false);
@@ -71,11 +87,20 @@ const MyOrdersPage: React.FC = () => {
             if (response?.code === 200 && response?.data) {
                 setMyJobData(response.data);
             } else {
-                setError(response?.msg || '获取接单数据失败');
+                // 当数据为空时，不显示错误消息，只设置默认数据
+                if (response?.code === 200) {
+                    setMyJobData({
+                        today_job_num: 0,
+                        accepted_job_num: 0,
+                        over_job_num: 0
+                    });
+                } else {
+                    showErrorOnce(response?.msg || '获取接单数据失败');
+                }
             }
         } catch (error: any) {
             console.error('获取接单数据失败:', error);
-            setError('获取接单数据失败，请重试');
+            showErrorOnce('获取接单数据失败，请重试');
         } finally {
             setLoading(false);
         }
@@ -87,12 +112,21 @@ const MyOrdersPage: React.FC = () => {
                 getRequest("/jobTask/distinct-city", {}, true),
                 getRequest("/jobTask/distinct-titles", {}, true),
             ]);
-            const cityData = cityResp?.data ?? cityResp?.result ?? cityResp;
-            const typeData = typeResp?.data ?? typeResp?.result ?? typeResp;
-            setCities(Array.isArray(cityData) ? cityData : (cityData?.list || []));
-            setJobTypes(Array.isArray(typeData) ? typeData : (typeData?.list || []));
+            
+            // 处理城市数据
+            if (cityResp?.code === 200) {
+                const cityData = cityResp?.data ?? cityResp?.result ?? cityResp;
+                setCities(Array.isArray(cityData) ? cityData : (cityData?.list || []));
+            }
+            
+            // 处理岗位类型数据
+            if (typeResp?.code === 200) {
+                const typeData = typeResp?.data ?? typeResp?.result ?? typeResp;
+                setJobTypes(Array.isArray(typeData) ? typeData : (typeData?.list || []));
+            }
         } catch (error: any) {
             console.error('获取选项数据失败:', error);
+            // 静默处理错误，不影响主要功能
         }
     };
 
@@ -120,11 +154,19 @@ const MyOrdersPage: React.FC = () => {
                 setPage(data.curr_page || p);
                 setPageSize(data.page_size || s);
             } else {
-                message.error(response?.msg || '获取订单列表失败');
+                // 当数据为空时，不显示错误消息，只设置空数据
+                if (response?.code === 200) {
+                    setOrderList([]);
+                    setTotal(0);
+                    setPage(p);
+                    setPageSize(s);
+                } else {
+                    showErrorOnce(response?.msg || '获取订单列表失败');
+                }
             }
         } catch (error: any) {
             console.error('获取订单列表失败:', error);
-            message.error('获取订单列表失败，请重试');
+            showErrorOnce('获取订单列表失败，请重试');
         } finally {
             setOrderLoading(false);
         }
@@ -320,7 +362,7 @@ const MyOrdersPage: React.FC = () => {
                     <Row gutter={[24, 16]}>
                         <Col xs={24} sm={12} md={8} lg={6}>
                             <Form.Item 
-                                label="工作关键字"
+                                label="工作类型"
                                 name="title"
                                 style={{ marginBottom: 0 }}
                             >

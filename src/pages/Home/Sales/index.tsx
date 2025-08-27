@@ -209,43 +209,75 @@ const SalesPage: React.FC = () => {
                             </div>
                         }
                     >
-                        <EChart
-                            style={{height: 280}}
-                            option={{
-                                tooltip: {
-                                    trigger: 'item',
-                                    formatter: '{a} <br/>{b}: {c} ({d}%)'
-                                },
-                                series: [
-                                    {
-                                        name: '接单状态',
-                                        type: 'pie',
-                                        radius: ['60%','85%'],
-                                        avoidLabelOverlap: false,
-                                        label: { 
-                                            show: true, 
-                                            position: 'center', 
-                                            formatter: `{b}\n{c}`,
-                                            fontSize: 14,
-                                            fontWeight: 600
-                                        },
-                                        data: [
-                                            { 
-                                                value: salesData.total_accepted_num, 
-                                                name: '已接单',
-                                                itemStyle: { color: '#52c41a' }
+                        <div style={{ position: 'relative' }}>
+                            <EChart
+                                style={{height: 280}}
+                                option={{
+                                    tooltip: {
+                                        trigger: 'item',
+                                        formatter: '{a} <br/>{b}: {c} ({d}%)'
+                                    },
+                                    legend: {
+                                        orient: 'vertical',
+                                        right: 10,
+                                        top: 'center',
+                                        textStyle: {
+                                            fontSize: 12
+                                        }
+                                    },
+                                    series: [
+                                        {
+                                            name: '接单状态',
+                                            type: 'pie',
+                                            radius: ['60%','85%'],
+                                            avoidLabelOverlap: true,
+                                            label: { 
+                                                show: false
                                             },
-                                            { 
-                                                value: salesData.total_retain_num, 
-                                                name: '未接单',
-                                                itemStyle: { color: '#1890ff' }
+                                            labelLine: {
+                                                show: false
                                             },
-                                        ],
-                                        color: ['#52c41a','#1890ff']
-                                    }
-                                ]
-                            }}
-                        />
+                                            data: [
+                                                { 
+                                                    value: salesData.total_accepted_num, 
+                                                    name: '已接单',
+                                                    itemStyle: { color: '#52c41a' }
+                                                },
+                                                { 
+                                                    value: salesData.total_retain_num, 
+                                                    name: '未接单',
+                                                    itemStyle: { color: '#1890ff' }
+                                                },
+                                            ],
+                                            color: ['#52c41a','#1890ff']
+                                        }
+                                    ]
+                                }}
+                            />
+                            <div style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                textAlign: 'center',
+                                pointerEvents: 'none'
+                            }}>
+                                <div style={{
+                                    fontSize: '24px',
+                                    fontWeight: '600',
+                                    color: '#262626',
+                                    marginBottom: '4px'
+                                }}>
+                                    {salesData.total_accepted_num + salesData.total_retain_num}
+                                </div>
+                                <div style={{
+                                    fontSize: '12px',
+                                    color: '#666'
+                                }}>
+                                    总订单数
+                                </div>
+                            </div>
+                        </div>
                     </Card>
                 </Col>
 

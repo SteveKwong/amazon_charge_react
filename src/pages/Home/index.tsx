@@ -5,13 +5,22 @@ import dayjs from "dayjs";
 import RightActionBar from "@/components/RightActionBar";
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import companyIcon from "@/components/icon.png";
+import { getRequest } from "@/components/network/api";
 
 const { Header, Sider, Content } = Layout;
+
+// 用户信息接口
+interface UserInfo {
+    nickname: string;
+    icon_url: string;
+}
 
 const HomeLayout: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState<boolean>(false);
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+    const [userInfoLoading, setUserInfoLoading] = useState(false);
 
     const selectedKeys = useMemo(() => {
         if (location.pathname.startsWith("/home/order-hall/notice")) return ["order-hall:notice"];
@@ -29,11 +38,54 @@ const HomeLayout: React.FC = () => {
     }, [location.pathname]);
 
     const [nowText, setNowText] = useState<string>(dayjs().format('YYYY-MM-DD HH:mm:ss'));
+    
+    // 测试头像URL是否有效
+    const testImageUrl = (url: string): Promise<boolean> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve(true);
+            img.onerror = () => resolve(false);
+            img.src = url;
+        });
+    };
+
+    // 获取用户信息
+    const fetchUserInfo = async () => {
+        try {
+            setUserInfoLoading(true);
+            const response = await getRequest("user/getNicknameAndPicture", {}, true);
+            
+            console.log('用户信息响应:', response);
+            
+            if (response?.code === 200 && response?.data) {
+                const userData = response.data;
+                console.log('设置用户信息:', userData);
+                
+                // 测试头像URL是否有效
+                if (userData.icon_url) {
+                    const isValidUrl = await testImageUrl(userData.icon_url);
+                    console.log('头像URL是否有效:', isValidUrl, userData.icon_url);
+                }
+                
+                setUserInfo(userData);
+            }
+        } catch (error) {
+            console.error('获取用户信息失败:', error);
+        } finally {
+            setUserInfoLoading(false);
+        }
+    };
+    
     useEffect(() => {
         const timer = setInterval(() => {
             setNowText(dayjs().format('YYYY-MM-DD HH:mm:ss'));
         }, 1000);
         return () => clearInterval(timer);
+    }, []);
+    
+    // 页面加载时获取用户信息
+    useEffect(() => {
+        fetchUserInfo();
     }, []);
 
     // 阻止从 Home 直接后退到登录或外部：进入时 push 一层哨兵状态，回退时再 push 回来
@@ -112,15 +164,29 @@ const HomeLayout: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: collapsed ? 'center' : 'flex-start'
                 }}>
-                    <img 
-                        src={companyIcon} 
-                        alt="公司Logo" 
-                        style={{
-                            height: collapsed ? '32px' : '40px',
-                            width: 'auto',
-                            objectFit: 'contain'
-                        }}
-                    />
+                    {collapsed ? (
+                        <Avatar 
+                            size={32}
+                            src={userInfo?.icon_url}
+                            style={{backgroundColor: '#1677ff'}}
+                            onError={() => {
+                                console.log('左侧头像加载失败，使用默认头像');
+                                return false;
+                            }}
+                        >
+                            {userInfo?.nickname?.charAt(0) || 'U'}
+                        </Avatar>
+                    ) : (
+                        <img 
+                            src={companyIcon} 
+                            alt="公司Logo" 
+                            style={{
+                                height: '40px',
+                                width: 'auto',
+                                objectFit: 'contain'
+                            }}
+                        />
+                    )}
                 </div>
                 
                 {/* 缩放按钮 */}
@@ -197,8 +263,20 @@ const HomeLayout: React.FC = () => {
                             trigger={["click"]}
                         >
                             <Space style={{cursor: 'pointer'}}>
-                                <Avatar size={32} style={{backgroundColor: '#1677ff'}}>U</Avatar>
-                                <Typography.Text>Profile</Typography.Text>
+                                <Avatar 
+                                    size={32} 
+                                    src={userInfo?.icon_url}
+                                    style={{backgroundColor: '#1677ff'}}
+                                    onError={() => {
+                                        console.log('头像加载失败，使用默认头像');
+                                        return false;
+                                    }}
+                                >
+                                    {userInfo?.nickname?.charAt(0) || 'U'}
+                                </Avatar>
+                                <Typography.Text>
+                                    {userInfoLoading ? '加载中...' : (userInfo?.nickname || 'Profile')}
+                                </Typography.Text>
                             </Space>
                         </Dropdown>
                     </Space>

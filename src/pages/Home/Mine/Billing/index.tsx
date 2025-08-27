@@ -16,8 +16,11 @@ import {
     Divider,
     Space,
     Table,
-    Tabs
+    Tabs,
+    DatePicker,
+    ConfigProvider
 } from "antd";
+import zhCN from "antd/locale/zh_CN";
 import {
     SendOutlined,
     PlusOutlined,
@@ -27,16 +30,44 @@ import {
     ArrowUpOutlined,
     ArrowDownOutlined,
     WechatOutlined,
-    AlipayOutlined
+    AlipayOutlined,
+    CalendarOutlined,
+    ReloadOutlined
 } from "@ant-design/icons";
 import RightActionBar from "@/components/RightActionBar";
 import { getRequest, postRequest } from "@/components/network/api";
 import EChart from "@/components/EChart";
 import "./index.scss";
+import dayjs from "dayjs";
+import "dayjs/locale/zh-cn";
+
+// 设置dayjs为中文
+dayjs.locale("zh-cn");
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { TabPane } = Tabs;
+const { RangePicker } = DatePicker;
+
+// API响应数据接口
+interface UserDisplayBalanceIneStatistics {
+    balance: number;
+    monthly_income: number;
+    compared_with_last_month_expenditure: string;
+    monthly_expenditure: number;
+    compared_with_last_month_income: string;
+    list_income_withdrawal_statistics: Array<{
+        expenditure_money: number;
+        income_money: number;
+        month: string;
+    }>;
+}
+
+interface ApiResponse {
+    msg: string;
+    code: number;
+    userDisplayBalanceIneStatistics: UserDisplayBalanceIneStatistics;
+}
 
 // 收入提现数据接口
 interface IncomeExpenseData {
@@ -48,22 +79,20 @@ interface IncomeExpenseData {
 
 // 收支记录接口
 interface TransactionRecord {
-    id: number;
-    type: 'income' | 'expense';
-    amount: number;
-    description: string;
-    category: string;
-    date: string;
-    paymentMethod: string;
+    type: string;
+    money: number;
+    status: string;
+    pay_method: string | null;
+    datetime: string;
 }
 
 const MyBillingPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
-    const [balance, setBalance] = useState(23432.03);
-    const [income, setIncome] = useState(9990);
-    const [expense, setExpense] = useState(1989);
-    const [incomeChange, setIncomeChange] = useState(8.2);
-    const [expenseChange, setExpenseChange] = useState(-6.6);
+    const [balance, setBalance] = useState(0);
+    const [income, setIncome] = useState(0);
+    const [expense, setExpense] = useState(0);
+    const [incomeChange, setIncomeChange] = useState("+0%");
+    const [expenseChange, setExpenseChange] = useState("+0%");
     const [showBalance, setShowBalance] = useState(true);
     const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
     const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
@@ -72,50 +101,76 @@ const MyBillingPage: React.FC = () => {
     const [withdrawForm] = Form.useForm();
     const [withdrawLoading, setWithdrawLoading] = useState(false);
     const [chartType, setChartType] = useState<'income' | 'expense'>('income');
+    
+    // 时间范围选择
+    const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+        dayjs().subtract(11, 'month'),
+        dayjs()
+    ]);
+    
+    // 图表数据
+    const [monthlyData, setMonthlyData] = useState<IncomeExpenseData[]>([]);
 
-    // 模拟月度数据
-    const monthlyData: IncomeExpenseData[] = [
-        { month: '一月', income: 8000, expense: 1200, balance: 6800 },
-        { month: '二月', income: 8500, expense: 1100, balance: 14200 },
-        { month: '三月', income: 9200, expense: 1300, balance: 22100 },
-        { month: '四月', income: 8800, expense: 1400, balance: 29500 },
-        { month: '五月', income: 9500, expense: 1200, balance: 37800 },
-        { month: '六月', income: 8700, expense: 1600, balance: 44900 },
-        { month: '七月', income: 9100, expense: 1350, balance: 52650 },
-        { month: '八月', income: 8900, expense: 1250, balance: 60300 },
-        { month: '九月', income: 9300, expense: 1189, balance: 68411 },
-        { month: '十月', income: 8900, expense: 1250, balance: 60300 },
-        { month: '十一月', income: 9300, expense: 1189, balance: 68411 },
-        { month: '十二月', income: 9300, expense: 1189, balance: 68411 }
-    ];
-
-    // 模拟收支记录数据
-    const transactionRecords: TransactionRecord[] = [
-        { id: 1, type: 'income', amount: 5000, description: '工资收入', category: '工资', date: '2024-12-01', paymentMethod: '银行转账' },
-        { id: 2, type: 'income', amount: 2000, description: '兼职收入', category: '兼职', date: '2024-12-02', paymentMethod: '支付宝' },
-        { id: 3, type: 'income', amount: 1500, description: '奖金', category: '奖金', date: '2024-12-03', paymentMethod: '银行转账' },
-        { id: 4, type: 'expense', amount: 800, description: '餐饮消费', category: '餐饮', date: '2024-12-01', paymentMethod: '微信支付' },
-        { id: 5, type: 'expense', amount: 1200, description: '购物消费', category: '购物', date: '2024-12-02', paymentMethod: '支付宝' },
-        { id: 6, type: 'expense', amount: 500, description: '交通费用', category: '交通', date: '2024-12-03', paymentMethod: '余额支付' },
-        { id: 7, type: 'income', amount: 3000, description: '投资收益', category: '投资', date: '2024-12-04', paymentMethod: '银行转账' },
-        { id: 8, type: 'expense', amount: 1500, description: '娱乐消费', category: '娱乐', date: '2024-12-04', paymentMethod: '微信支付' }
-    ];
+    // 收支记录数据
+    const [transactionRecords, setTransactionRecords] = useState<TransactionRecord[]>([]);
+    const [transactionLoading, setTransactionLoading] = useState(false);
 
     useEffect(() => {
         fetchBillingData();
-    }, []);
+        fetchTransactionList();
+    }, [dateRange]);
 
     const fetchBillingData = async () => {
         setLoading(true);
         try {
-            // 实际项目中应该调用API
-            // const response = await getRequest("/billing/overview", {}, true);
+            const startMonth = dateRange[0].format('YYYY-MM');
+            const endMonth = dateRange[1].format('YYYY-MM');
             
-            // 使用模拟数据
-            await new Promise(resolve => setTimeout(resolve, 500));
+            console.log('调用接口参数:', { startMonth, endMonth });
+            
+            const response = await getRequest(
+                "rechargeOrder/userDisplayBalanceIneStatistics",
+                { startMonth, endMonth },
+                true
+            ) as ApiResponse;
+            
+            console.log('接口响应:', response);
+            
+            if (response.code === 200) {
+                const data = response.userDisplayBalanceIneStatistics;
+                
+                // 更新余额和当月数据
+                setBalance(data.balance);
+                setIncome(data.monthly_income);
+                setExpense(data.monthly_expenditure);
+                setIncomeChange(data.compared_with_last_month_income);
+                setExpenseChange(data.compared_with_last_month_expenditure);
+                
+                // 处理图表数据
+                const chartData: IncomeExpenseData[] = data.list_income_withdrawal_statistics.map(item => ({
+                    month: item.month,
+                    income: item.income_money,
+                    expense: item.expenditure_money,
+                    balance: 0 // 这里可以根据需要计算累计余额
+                }));
+                
+                setMonthlyData(chartData);
+            } else {
+                // 当数据为空时，不显示错误消息，只设置空数据
+                if (response.code === 200) {
+                    setBalance(0);
+                    setIncome(0);
+                    setExpense(0);
+                    setIncomeChange("+0%");
+                    setExpenseChange("+0%");
+                    setMonthlyData([]);
+                } else {
+                    message.error(response.msg || '获取数据失败');
+                }
+            }
         } catch (error) {
             console.error('获取账单数据失败:', error);
-            message.error('获取账单数据失败');
+            message.error('获取账单数据失败，请检查网络连接');
         } finally {
             setLoading(false);
         }
@@ -152,8 +207,47 @@ const MyBillingPage: React.FC = () => {
         }
     };
 
+    // 处理时间范围变化
+    const fetchTransactionList = async () => {
+        try {
+            setTransactionLoading(true);
+            const response = await getRequest("rechargeOrder/userDisplayIneListInfo", {}, true);
+            
+            if (response?.code === 200 && response?.userDisplayIneListInfo) {
+                setTransactionRecords(response.userDisplayIneListInfo);
+            } else {
+                setTransactionRecords([]);
+            }
+        } catch (error) {
+            console.error('获取收支清单失败:', error);
+            setTransactionRecords([]);
+        } finally {
+            setTransactionLoading(false);
+        }
+    };
+
+    const handleDateRangeChange = (dates: any) => {
+        if (dates && dates.length === 2) {
+            setDateRange([dates[0], dates[1]]);
+        }
+    };
+
     // 根据图表类型生成图表配置
     const getChartOption = () => {
+        if (monthlyData.length === 0) {
+            return {
+                title: {
+                    text: '暂无数据',
+                    left: 'center',
+                    top: 'center',
+                    textStyle: {
+                        fontSize: 16,
+                        color: '#999'
+                    }
+                }
+            };
+        }
+
         const data = chartType === 'income' 
             ? monthlyData.map(item => item.income)
             : monthlyData.map(item => item.expense);
@@ -179,14 +273,10 @@ const MyBillingPage: React.FC = () => {
                     const monthData = monthlyData[data.dataIndex];
                     if (chartType === 'income') {
                         return `${data.name}<br/>
-                                <span style="color: #52c41a">收入: ${data.value}元</span><br/>
-                                <span style="color: #fa8c16">提现: ${monthData.expense}元</span><br/>
-                                <span style="color: #1890ff">余额: ${monthData.balance}元</span>`;
+                                <span style="color: #52c41a">收入: ${data.value}元</span>`;
                     } else {
                         return `${data.name}<br/>
-                                <span style="color: #fa8c16">提现: ${data.value}元</span><br/>
-                                <span style="color: #52c41a">收入: ${monthData.income}元</span><br/>
-                                <span style="color: #1890ff">余额: ${monthData.balance}元</span>`;
+                                <span style="color: #fa8c16">提现: ${data.value}元</span>`;
                     }
                 }
             },
@@ -275,52 +365,61 @@ const MyBillingPage: React.FC = () => {
             dataIndex: 'type',
             key: 'type',
             width: 100,
-            render: (type: string) => (
-                <Tag color={type === 'income' ? 'success' : 'error'}>
-                    {type === 'income' ? '收入' : '提现'}
+            render: (type: string) => {
+                const color = type === '收入' ? 'success' : type === '提现' ? 'error' : 'default';
+                return <Tag color={color}>{type}</Tag>;
+            },
+        },
+        {
+            title: '金额',
+            dataIndex: 'money',
+            key: 'money',
+            width: 120,
+            render: (money: number, record: TransactionRecord) => {
+                const isIncome = record.type === '收入' || record.type === '充值';
+                return (
+                    <Text type={isIncome ? 'success' : 'danger'}>
+                        {isIncome ? '+' : '-'}{money.toFixed(2)}元
+                    </Text>
+                );
+            },
+        },
+        {
+            title: '状态',
+            dataIndex: 'status',
+            key: 'status',
+            width: 100,
+            render: (status: string) => (
+                <Tag color={status === '成功' ? 'success' : 'error'}>
+                    {status}
                 </Tag>
             ),
         },
         {
-            title: '金额',
-            dataIndex: 'amount',
-            key: 'amount',
-            width: 120,
-            render: (amount: number, record: TransactionRecord) => (
-                <Text type={record.type === 'income' ? 'success' : 'danger'}>
-                    {record.type === 'income' ? '+' : '-'}{amount.toFixed(2)}元
-                </Text>
-            ),
-        },
-        {
-            title: '描述',
-            dataIndex: 'description',
-            key: 'description',
-            ellipsis: true,
-        },
-        {
-            title: '分类',
-            dataIndex: 'category',
-            key: 'category',
-            width: 100,
-        },
-        {
             title: '支付方式',
-            dataIndex: 'paymentMethod',
-            key: 'paymentMethod',
+            dataIndex: 'pay_method',
+            key: 'pay_method',
             width: 120,
+            render: (payMethod: string | null) => {
+                if (!payMethod) return '-';
+                return payMethod;
+            },
         },
         {
-            title: '日期',
-            dataIndex: 'date',
-            key: 'date',
-            width: 120,
+            title: '时间',
+            dataIndex: 'datetime',
+            key: 'datetime',
+            width: 180,
+            render: (datetime: string) => {
+                return new Date(datetime).toLocaleString('zh-CN');
+            },
         },
     ];
 
     return (
-        <div className="financial-dashboard">
-            <Spin spinning={loading}>
+        <ConfigProvider locale={zhCN}>
+            <div className="financial-dashboard">
+                <Spin spinning={loading}>
                 <Row gutter={24}>
                     {/* 主要内容区域 - 调整为全宽 */}
                     <Col span={24}>
@@ -371,7 +470,7 @@ const MyBillingPage: React.FC = () => {
                                         </div>
                                         <div className="change-tag">
                                             <Tag color="success" className="change-tag-content">
-                                                <ArrowUpOutlined /> +{incomeChange}%
+                                                {incomeChange.includes('+') ? <ArrowUpOutlined /> : <ArrowDownOutlined />} {incomeChange}
                                             </Tag>
                                         </div>
                                     </div>
@@ -391,7 +490,7 @@ const MyBillingPage: React.FC = () => {
                                         </div>
                                         <div className="change-tag">
                                             <Tag color="error" className="change-tag-content">
-                                                <ArrowDownOutlined /> {expenseChange}%
+                                                {expenseChange.includes('+') ? <ArrowUpOutlined /> : <ArrowDownOutlined />} {expenseChange}
                                             </Tag>
                                         </div>
                                     </div>
@@ -403,21 +502,42 @@ const MyBillingPage: React.FC = () => {
                         <Card className="chart-card" bordered={false}>
                             <div className="chart-header">
                                 <Title level={4} className="chart-title">收入提现统计</Title>
-                                <div className="chart-type-selector">
+                                <div className="chart-controls">
+                                    <div className="date-range-picker">
+                                        <CalendarOutlined style={{ marginRight: 8, color: '#666' }} />
+                                        <RangePicker
+                                            value={dateRange}
+                                            onChange={handleDateRangeChange}
+                                            picker="month"
+                                            format="YYYY年MM月"
+                                            placeholder={['开始月份', '结束月份']}
+                                            style={{ width: 220 }}
+                                        />
+                                    </div>
                                     <Button 
-                                        type={chartType === 'income' ? 'primary' : 'default'}
-                                        onClick={() => setChartType('income')}
-                                        className="chart-btn"
+                                        icon={<ReloadOutlined />}
+                                        onClick={fetchBillingData}
+                                        loading={loading}
+                                        className="refresh-btn"
                                     >
-                                        收入
+                                        刷新
                                     </Button>
-                                    <Button 
-                                        type={chartType === 'expense' ? 'primary' : 'default'}
-                                        onClick={() => setChartType('expense')}
-                                        className="chart-btn"
-                                    >
-                                        提现
-                                    </Button>
+                                    <div className="chart-type-selector">
+                                        <Button 
+                                            type={chartType === 'income' ? 'primary' : 'default'}
+                                            onClick={() => setChartType('income')}
+                                            className="chart-btn"
+                                        >
+                                            收入
+                                        </Button>
+                                        <Button 
+                                            type={chartType === 'expense' ? 'primary' : 'default'}
+                                            onClick={() => setChartType('expense')}
+                                            className="chart-btn"
+                                        >
+                                            提现
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                             <div className="chart-container">
@@ -428,19 +548,20 @@ const MyBillingPage: React.FC = () => {
                         {/* 收支清单 */}
                         <Card className="transaction-list-card" bordered={false}>
                             <Title level={4} className="list-title">收支清单</Title>
-                            <Table
-                                columns={transactionColumns}
-                                dataSource={transactionRecords}
-                                rowKey="id"
-                                pagination={{
-                                    pageSize: 15,
-                                    showSizeChanger: true,
-                                    showQuickJumper: true,
-                                    showTotal: (total) => `共 ${total} 条记录`,
-                                }}
-                                scroll={{ x: 1000 }}
-                                size="middle"
-                            />
+                                            <Table
+                    columns={transactionColumns}
+                    dataSource={transactionRecords}
+                    rowKey={(record, index) => `${record.datetime}-${index}`}
+                    loading={transactionLoading}
+                    pagination={{
+                        pageSize: 15,
+                        showSizeChanger: true,
+                        showQuickJumper: true,
+                        showTotal: (total) => `共 ${total} 条记录`,
+                    }}
+                    scroll={{ x: 1000 }}
+                    size="middle"
+                />
                         </Card>
                     </Col>
                 </Row>
@@ -596,6 +717,7 @@ const MyBillingPage: React.FC = () => {
                 style={{ left: 12, bottom: 12, right: 'auto', top: 'auto' }}
             />
         </div>
+        </ConfigProvider>
     );
 };
 
