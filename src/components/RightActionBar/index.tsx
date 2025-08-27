@@ -1,6 +1,7 @@
 import React, {useState} from "react";
-import {Button, Modal, Typography, Input, Form, message, Image} from "antd";
+import {Button, Modal, Typography, Input, Form, message, Image, Spin} from "antd";
 import {EditOutlined, AudioOutlined, MoreOutlined} from "@ant-design/icons";
+import { postRequest } from "@/components/network/api";
 
 type RightActionBarProps = {
     qrSrc?: string;
@@ -12,17 +13,30 @@ const RightActionBar: React.FC<RightActionBarProps> = ({ qrSrc = "/qr-cs.png", s
     const [openContact, setOpenContact] = useState(false);
     const [form] = Form.useForm();
     const [expanded, setExpanded] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
 
     const submitSuggestion = async () => {
         try {
             const values = await form.validateFields();
-            // TODO: 接入后端 API 提交建议
-            console.log("suggestion:", values);
-            message.success("提交成功，感谢您的建议！");
-            setOpenSuggest(false);
-            form.resetFields();
-        } catch (_) {
-            // 校验失败忽略
+            setSubmitting(true);
+            
+            const response = await postRequest("/user/suggestion", {
+                usr_suggestion: values.content,
+                contact_way: values.contact || ""
+            }, true);
+            
+            if (response?.code === 200) {
+                message.success("提交成功，感谢您的建议！");
+                setOpenSuggest(false);
+                form.resetFields();
+            } else {
+                message.error(response?.msg || "提交失败，请重试");
+            }
+        } catch (error: any) {
+            console.error("提交建议失败:", error);
+            message.error("提交失败，请重试");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -77,24 +91,43 @@ const RightActionBar: React.FC<RightActionBarProps> = ({ qrSrc = "/qr-cs.png", s
             <Modal
                 title="提交建议"
                 open={openSuggest}
-                onCancel={() => setOpenSuggest(false)}
+                onCancel={() => !submitting && setOpenSuggest(false)}
                 onOk={submitSuggestion}
-                okText="提交"
+                okText={submitting ? "提交中..." : "提交"}
                 cancelText="取消"
                 centered
+                confirmLoading={submitting}
+                maskClosable={!submitting}
+                closable={!submitting}
             >
                 <Typography.Paragraph type="secondary" style={{marginBottom: 12}}>
-                    我们非常重视您的意见与建议。
+                    我们非常重视您的意见与建议。请填写您的建议内容和联系方式，我们会认真处理您的反馈。
                 </Typography.Paragraph>
                 <Form layout="vertical" form={form}>
                     <Form.Item
                         label="建议内容"
                         name="content"
-                        rules={[{ required: true, message: '请输入您的建议' }]}
+                        rules={[
+                            { required: true, message: '请输入您的建议' },
+                            { min: 1, message: '建议内容不能为空' }
+                        ]}
                     >
-                        <Input.TextArea rows={5} placeholder="请输入您的建议或问题…" allowClear />
+                        <Input.TextArea 
+                            rows={5} 
+                            placeholder="请输入您的建议或问题…" 
+                            allowClear 
+                            maxLength={500}
+                            showCount
+                        />
                     </Form.Item>
-                    <Form.Item label="联系方式 (选填)" name="contact">
+                    <Form.Item 
+                        label="联系方式" 
+                        name="contact"
+                        rules={[
+                            { required: true, message: '请输入联系方式' },
+                            { min: 1, message: '联系方式不能为空' }
+                        ]}
+                    >
                         <Input placeholder="邮箱/微信/手机号" allowClear />
                     </Form.Item>
                 </Form>
