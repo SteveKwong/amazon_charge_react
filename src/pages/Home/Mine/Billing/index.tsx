@@ -38,7 +38,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { TabPane } = Tabs;
 
-// 收入支出数据接口
+// 收入提现数据接口
 interface IncomeExpenseData {
     month: string;
     income: number;
@@ -75,15 +75,18 @@ const MyBillingPage: React.FC = () => {
 
     // 模拟月度数据
     const monthlyData: IncomeExpenseData[] = [
-        { month: 'Jan', income: 8000, expense: 1200, balance: 6800 },
-        { month: 'Feb', income: 8500, expense: 1100, balance: 14200 },
-        { month: 'Mar', income: 9200, expense: 1300, balance: 22100 },
-        { month: 'Apr', income: 8800, expense: 1400, balance: 29500 },
-        { month: 'May', income: 9500, expense: 1200, balance: 37800 },
-        { month: 'Jun', income: 8700, expense: 1600, balance: 44900 },
-        { month: 'Jul', income: 9100, expense: 1350, balance: 52650 },
-        { month: 'Aug', income: 8900, expense: 1250, balance: 60300 },
-        { month: 'Sep', income: 9300, expense: 1189, balance: 68411 }
+        { month: '一月', income: 8000, expense: 1200, balance: 6800 },
+        { month: '二月', income: 8500, expense: 1100, balance: 14200 },
+        { month: '三月', income: 9200, expense: 1300, balance: 22100 },
+        { month: '四月', income: 8800, expense: 1400, balance: 29500 },
+        { month: '五月', income: 9500, expense: 1200, balance: 37800 },
+        { month: '六月', income: 8700, expense: 1600, balance: 44900 },
+        { month: '七月', income: 9100, expense: 1350, balance: 52650 },
+        { month: '八月', income: 8900, expense: 1250, balance: 60300 },
+        { month: '九月', income: 9300, expense: 1189, balance: 68411 },
+        { month: '十月', income: 8900, expense: 1250, balance: 60300 },
+        { month: '十一月', income: 9300, expense: 1189, balance: 68411 },
+        { month: '十二月', income: 9300, expense: 1189, balance: 68411 }
     ];
 
     // 模拟收支记录数据
@@ -156,7 +159,7 @@ const MyBillingPage: React.FC = () => {
             : monthlyData.map(item => item.expense);
         
         const color = chartType === 'income' ? '#52c41a' : '#fa8c16';
-        const title = chartType === 'income' ? 'Income Statistics' : 'Expense Statistics';
+        const title = chartType === 'income' ? '收入统计' : '提现统计';
         
         return {
             title: {
@@ -177,11 +180,11 @@ const MyBillingPage: React.FC = () => {
                     if (chartType === 'income') {
                         return `${data.name}<br/>
                                 <span style="color: #52c41a">收入: ${data.value}元</span><br/>
-                                <span style="color: #fa8c16">支出: ${monthData.expense}元</span><br/>
+                                <span style="color: #fa8c16">提现: ${monthData.expense}元</span><br/>
                                 <span style="color: #1890ff">余额: ${monthData.balance}元</span>`;
                     } else {
                         return `${data.name}<br/>
-                                <span style="color: #fa8c16">支出: ${data.value}元</span><br/>
+                                <span style="color: #fa8c16">提现: ${data.value}元</span><br/>
                                 <span style="color: #52c41a">收入: ${monthData.income}元</span><br/>
                                 <span style="color: #1890ff">余额: ${monthData.balance}元</span>`;
                     }
@@ -274,7 +277,7 @@ const MyBillingPage: React.FC = () => {
             width: 100,
             render: (type: string) => (
                 <Tag color={type === 'income' ? 'success' : 'error'}>
-                    {type === 'income' ? '收入' : '支出'}
+                    {type === 'income' ? '收入' : '提现'}
                 </Tag>
             ),
         },
@@ -319,13 +322,13 @@ const MyBillingPage: React.FC = () => {
         <div className="financial-dashboard">
             <Spin spinning={loading}>
                 <Row gutter={24}>
-                    {/* 左侧主要内容区域 */}
-                    <Col span={16}>
+                    {/* 主要内容区域 - 调整为全宽 */}
+                    <Col span={24}>
                         {/* 当前余额卡片（替换原来的Total balance） */}
                         <Card className="current-balance-main-card" bordered={false}>
                             <div className="balance-header">
                                 <div className="balance-info">
-                                    <Text className="balance-label">Current balance</Text>
+                                    <Text className="balance-label">余额</Text>
                                     <div className="balance-amount">
                                         <span className="amount">{showBalance ? balance.toLocaleString() : '****'}</span>
                                     </div>
@@ -336,6 +339,7 @@ const MyBillingPage: React.FC = () => {
                                         icon={<PlusOutlined />} 
                                         className="action-btn recharge-btn"
                                         onClick={() => setRechargeModalVisible(true)}
+                                        size="large"
                                     >
                                         充值
                                     </Button>
@@ -343,6 +347,7 @@ const MyBillingPage: React.FC = () => {
                                         icon={<DownloadOutlined />} 
                                         className="action-btn withdraw-btn"
                                         onClick={() => setWithdrawModalVisible(true)}
+                                        size="large"
                                     >
                                         提现
                                     </Button>
@@ -350,8 +355,8 @@ const MyBillingPage: React.FC = () => {
                             </div>
                         </Card>
 
-                        {/* 收入和支出概览 */}
-                        <Row gutter={16} style={{ marginBottom: 24 }}>
+                        {/* 收入和提现概览 - 增大卡片尺寸 */}
+                        <Row gutter={24} style={{ marginBottom: 32 }}>
                             <Col span={12}>
                                 <Card className="income-card" bordered={false}>
                                     <div className="card-content">
@@ -381,7 +386,7 @@ const MyBillingPage: React.FC = () => {
                                             </div>
                                         </div>
                                         <div className="text-section">
-                                            <Text className="card-label">当月支出</Text>
+                                            <Text className="card-label">当月提现</Text>
                                             <div className="card-amount">{expense.toLocaleString()}</div>
                                         </div>
                                         <div className="change-tag">
@@ -397,7 +402,7 @@ const MyBillingPage: React.FC = () => {
                         {/* 余额统计图表 */}
                         <Card className="chart-card" bordered={false}>
                             <div className="chart-header">
-                                <Title level={4} className="chart-title">Balance statistics</Title>
+                                <Title level={4} className="chart-title">收入提现统计</Title>
                                 <div className="chart-type-selector">
                                     <Button 
                                         type={chartType === 'income' ? 'primary' : 'default'}
@@ -411,7 +416,7 @@ const MyBillingPage: React.FC = () => {
                                         onClick={() => setChartType('expense')}
                                         className="chart-btn"
                                     >
-                                        支出
+                                        提现
                                     </Button>
                                 </div>
                             </div>
@@ -428,41 +433,14 @@ const MyBillingPage: React.FC = () => {
                                 dataSource={transactionRecords}
                                 rowKey="id"
                                 pagination={{
-                                    pageSize: 10,
+                                    pageSize: 15,
                                     showSizeChanger: true,
                                     showQuickJumper: true,
                                     showTotal: (total) => `共 ${total} 条记录`,
                                 }}
-                                scroll={{ x: 800 }}
+                                scroll={{ x: 1000 }}
+                                size="middle"
                             />
-                        </Card>
-                    </Col>
-
-                    {/* 右侧边栏 */}
-                    <Col span={8}>
-                        {/* 收入支出统计卡片 */}
-                        <Card className="stats-card" bordered={false}>
-                            <div className="stats-header">
-                                <Title level={5} className="stats-title">本月统计</Title>
-                            </div>
-                            <div className="stats-content">
-                                <div className="stat-item">
-                                    <div className="stat-label">总收入</div>
-                                    <div className="stat-value income">{income.toLocaleString()}</div>
-                                    <div className="stat-change positive">+{incomeChange}%</div>
-                                </div>
-                                <Divider />
-                                <div className="stat-item">
-                                    <div className="stat-label">总支出</div>
-                                    <div className="stat-value expense">{expense.toLocaleString()}</div>
-                                    <div className="stat-change negative">{expenseChange}%</div>
-                                </div>
-                                <Divider />
-                                <div className="stat-item">
-                                    <div className="stat-label">净收入</div>
-                                    <div className="stat-value net-income">{(income - expense).toLocaleString()}</div>
-                                </div>
-                            </div>
                         </Card>
                     </Col>
                 </Row>
