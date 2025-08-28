@@ -166,29 +166,15 @@ const HomeLayout: React.FC = () => {
                     alignItems: 'center',
                     justifyContent: collapsed ? 'center' : 'flex-start'
                 }}>
-                    {collapsed ? (
-                        <Avatar 
-                            size={32}
-                            src={userInfo?.icon_url}
-                            style={{backgroundColor: '#1677ff'}}
-                            onError={() => {
-                                console.log('左侧头像加载失败，使用默认头像');
-                                return false;
-                            }}
-                        >
-                            {userInfo?.nickname?.charAt(0) || 'U'}
-                        </Avatar>
-                    ) : (
-                        <img 
-                            src={companyIcon} 
-                            alt="公司Logo" 
-                            style={{
-                                height: '40px',
-                                width: 'auto',
-                                objectFit: 'contain'
-                            }}
-                        />
-                    )}
+                    <img 
+                        src={companyIcon} 
+                        alt="公司Logo" 
+                        style={{
+                            height: collapsed ? '32px' : '40px',
+                            width: collapsed ? '32px' : 'auto',
+                            objectFit: 'contain'
+                        }}
+                    />
                 </div>
                 
                 {/* 缩放按钮 */}

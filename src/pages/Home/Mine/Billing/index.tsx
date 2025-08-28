@@ -95,6 +95,10 @@ const MyBillingPage: React.FC = () => {
     const [expenseChange, setExpenseChange] = useState("+0%");
     const [showBalance, setShowBalance] = useState(true);
     const [rechargeModalVisible, setRechargeModalVisible] = useState(false);
+    const [rechargeAmount, setRechargeAmount] = useState(100);
+    const [rechargeStep, setRechargeStep] = useState<'amount' | 'payment'>('amount');
+    const [paymentMethod, setPaymentMethod] = useState<'alipay' | 'wechat'>('alipay');
+    const [isProcessing, setIsProcessing] = useState(false);
     const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
     const [withdrawMethod, setWithdrawMethod] = useState<'wechat' | 'alipay'>('wechat');
     const [withdrawAmount, setWithdrawAmount] = useState(200);
@@ -174,6 +178,113 @@ const MyBillingPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // 处理充值金额选择
+    const handleRechargeAmountSelect = (amount: number) => {
+        setRechargeAmount(amount);
+    };
+
+    // 处理充值确认
+    const handleRechargeConfirm = () => {
+        setRechargeStep('payment');
+    };
+
+    // 处理充值支付
+    const handleRechargePayment = async () => {
+        if (isProcessing) return;
+        
+        setIsProcessing(true);
+        
+        try {
+            if (paymentMethod === 'alipay') {
+                // 调用支付宝充值接口
+                const token = localStorage.getItem('token'); // 从localStorage获取token
+                if (!token) {
+                    message.error('请先登录');
+                    return;
+                }
+                
+                // 调用支付宝充值接口，直接返回HTML表单
+                const response = await fetch(`http://localhost:8000/jinx/rechargeOrder/alipayCharge?amount=${rechargeAmount}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                // 获取HTML表单内容
+                const htmlContent = await response.text();
+                
+                // 调试信息
+                console.log('接口返回HTML内容:', htmlContent);
+                console.log('充值金额:', rechargeAmount);
+                console.log('Token:', token);
+                
+                // 检查是否包含支付宝表单
+                if (htmlContent.includes('punchout_form') && htmlContent.includes('alipay.trade.page.pay')) {
+                    // 创建新窗口进行支付
+                    const paymentWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+                    
+                    if (paymentWindow) {
+                        // 在新窗口中写入支付宝表单
+                        paymentWindow.document.write(htmlContent);
+                        paymentWindow.document.close();
+                        
+                        // 关闭充值弹窗
+                        setRechargeModalVisible(false);
+                        setRechargeStep('amount');
+                        setRechargeAmount(100);
+                        setPaymentMethod('alipay');
+                        
+                        message.success('正在新窗口打开支付宝支付页面...');
+                    } else {
+                        message.error('无法打开支付窗口，请检查浏览器弹窗设置');
+                    }
+                } else {
+                    message.error('创建支付宝订单失败，返回格式异常');
+                }
+            } else {
+                // 微信支付处理（暂时模拟）
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                message.success(`微信充值成功！充值金额：${rechargeAmount}元`);
+                setRechargeModalVisible(false);
+                setRechargeStep('amount');
+                setRechargeAmount(100);
+                setPaymentMethod('alipay');
+                
+                // 刷新账单数据
+                fetchBillingData();
+            }
+        } catch (error: any) {
+            console.error('充值失败:', error);
+            // 详细的错误信息
+            if (error.response) {
+                console.error('错误响应:', error.response);
+                if (error.response.status === 401) {
+                    message.error('登录已过期，请重新登录');
+                } else if (error.response.status === 500) {
+                    message.error('服务器内部错误，请稍后重试');
+                } else {
+                    message.error(`请求失败 (${error.response.status}): ${error.response.data?.msg || '未知错误'}`);
+                }
+            } else if (error.request) {
+                console.error('请求错误:', error.request);
+                message.error('网络连接失败，请检查网络设置');
+            } else {
+                message.error(`充值失败: ${error.message || '未知错误'}`);
+            }
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // 重置充值弹窗
+    const handleRechargeCancel = () => {
+        setRechargeModalVisible(false);
+        setRechargeStep('amount');
+        setRechargeAmount(100);
+        setPaymentMethod('alipay');
     };
 
     const handleWithdraw = async (values: any) => {
@@ -569,40 +680,189 @@ const MyBillingPage: React.FC = () => {
 
             {/* 充值模态框 */}
             <Modal
-                title="账户充值"
+                title={rechargeStep === 'amount' ? "账户充值" : "选择支付方式"}
                 open={rechargeModalVisible}
-                onCancel={() => setRechargeModalVisible(false)}
+                onCancel={handleRechargeCancel}
                 footer={null}
-                width={500}
+                width={600}
                 className="recharge-modal"
+                centered
             >
-                <Form layout="vertical">
-                    <Form.Item label="充值金额" name="amount" rules={[{ required: true, message: '请输入充值金额' }]}>
-                        <Input type="number" placeholder="请输入充值金额" addonAfter="元" />
-                    </Form.Item>
-                    <Form.Item label="支付方式" name="paymentMethod" rules={[{ required: true, message: '请选择支付方式' }]}>
-                        <Select placeholder="请选择支付方式">
-                            <Option value="wechat">
-                                <WechatOutlined style={{ color: '#52c41a', marginRight: 8 }} />
-                                微信支付
-                            </Option>
-                            <Option value="alipay">
-                                <AlipayOutlined style={{ color: '#1890ff', marginRight: 8 }} />
-                                支付宝
-                            </Option>
-                        </Select>
-                    </Form.Item>
-                    <Form.Item>
-                        <Space>
-                            <Button type="primary" onClick={() => setRechargeModalVisible(false)}>
-                                确认充值
-                            </Button>
-                            <Button onClick={() => setRechargeModalVisible(false)}>
-                                取消
-                            </Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
+                {rechargeStep === 'amount' ? (
+                    // 第一步：选择充值金额
+                    <div className="recharge-step-amount">
+                        {/* 余额显示 */}
+                        <div className="balance-display">
+                            <div className="current-balance">
+                                <Text className="balance-label">当前余额</Text>
+                                <div className="balance-amount">¥{balance.toFixed(2)}</div>
+                            </div>
+                        </div>
+
+                        {/* 充值金额选择 */}
+                        <div className="amount-selection">
+                            <Text className="section-title">充值金额</Text>
+                            <div className="amount-tags">
+                                <Tag 
+                                    className={`amount-tag ${rechargeAmount === 100 ? 'selected' : ''}`}
+                                    onClick={() => handleRechargeAmountSelect(100)}
+                                >
+                                    ¥100
+                                </Tag>
+                                <Tag 
+                                    className={`amount-tag ${rechargeAmount === 200 ? 'selected' : ''}`}
+                                    onClick={() => handleRechargeAmountSelect(200)}
+                                >
+                                    ¥200
+                                </Tag>
+                                <Tag 
+                                    className={`amount-tag ${rechargeAmount === 1000 ? 'selected' : ''}`}
+                                    onClick={() => handleRechargeAmountSelect(1000)}
+                                >
+                                    ¥1000
+                                </Tag>
+                            </div>
+                            <div className="custom-amount">
+                                <Input
+                                    type="text"
+                                    placeholder="或输入自定义金额"
+                                    addonAfter="元"
+                                    value={rechargeAmount}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value === '') {
+                                            setRechargeAmount(0);
+                                        } else {
+                                            const numValue = Number(value);
+                                            if (!isNaN(numValue) && numValue >= 0) {
+                                                setRechargeAmount(numValue);
+                                            }
+                                        }
+                                    }}
+                                    style={{ marginTop: 16 }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* 充值须知 */}
+                        <div className="recharge-notice">
+                            <Text className="section-title">充值须知</Text>
+                            <div className="notice-list">
+                                <div className="notice-item">
+                                    <Text className="notice-number">1.</Text>
+                                    <Text className="notice-text">提现会产生1%的手续费</Text>
+                                </div>
+                                <div className="notice-item">
+                                    <Text className="notice-number">2.</Text>
+                                    <Text className="notice-text">账号违规自己转移套现将被冻结处理</Text>
+                                </div>
+                                <div className="notice-item">
+                                    <Text className="notice-number">3.</Text>
+                                    <Text className="notice-text">禁止未成年人充值消费</Text>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 操作按钮 */}
+                        <div className="recharge-actions">
+                            <Space size={16}>
+                                <Button 
+                                    type="primary" 
+                                    size="large"
+                                    onClick={handleRechargeConfirm}
+                                    style={{ 
+                                        height: '44px', 
+                                        padding: '0 32px',
+                                        fontSize: '16px',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    确认充值
+                                </Button>
+                                <Button 
+                                    size="large"
+                                    onClick={handleRechargeCancel}
+                                    style={{ 
+                                        height: '44px', 
+                                        padding: '0 32px'
+                                    }}
+                                >
+                                    取消
+                                </Button>
+                            </Space>
+                        </div>
+                    </div>
+                ) : (
+                    // 第二步：选择支付方式
+                    <div className="recharge-step-payment">
+                        <div className="payment-summary">
+                            <div className="payment-amount">
+                                <Text className="amount-label">充值金额</Text>
+                                <div className="amount-value">¥{rechargeAmount.toFixed(2)}</div>
+                            </div>
+                        </div>
+
+                        <div className="payment-methods">
+                            <Text className="section-title">请选择支付方式</Text>
+                            <div className="method-options">
+                                <div className="method-option">
+                                    <Radio 
+                                        value="alipay" 
+                                        checked={paymentMethod === 'alipay'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                    >
+                                        <AlipayOutlined className="method-icon alipay" />
+                                        <span className="method-name">支付宝</span>
+                                    </Radio>
+                                </div>
+                                <div className="method-option">
+                                    <Radio 
+                                        value="wechat"
+                                        checked={paymentMethod === 'wechat'}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                    >
+                                        <WechatOutlined className="method-icon wechat" />
+                                        <span className="method-name">微信</span>
+                                    </Radio>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="payment-actions">
+                            <Space size={16}>
+                                <Button 
+                                    type="primary" 
+                                    size="large"
+                                    onClick={handleRechargePayment}
+                                    loading={isProcessing}
+                                    disabled={isProcessing}
+                                    style={{ 
+                                        height: '44px', 
+                                        padding: '0 32px',
+                                        fontSize: '16px',
+                                        fontWeight: 600,
+                                        background: paymentMethod === 'alipay' 
+                                            ? 'linear-gradient(135deg, #1890ff 0%, #40a9ff 100%)' 
+                                            : 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
+                                        border: 'none'
+                                    }}
+                                >
+                                    {isProcessing ? '处理中...' : '确认付款'}
+                                </Button>
+                                <Button 
+                                    size="large"
+                                    onClick={() => setRechargeStep('amount')}
+                                    style={{ 
+                                        height: '44px', 
+                                        padding: '0 32px'
+                                    }}
+                                >
+                                    返回
+                                </Button>
+                            </Space>
+                        </div>
+                    </div>
+                )}
             </Modal>
 
             {/* 提现模态框 */}

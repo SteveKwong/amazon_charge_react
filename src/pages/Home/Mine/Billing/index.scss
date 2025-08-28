@@ -766,3 +766,292 @@
     }
   }
 }
+
+// 充值弹窗样式
+.recharge-modal {
+  .ant-modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  
+  .ant-modal-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e8e8e8;
+    
+    .ant-modal-title {
+      color: #333333;
+      font-weight: 600;
+      font-size: 18px;
+    }
+  }
+  
+  .ant-modal-close {
+    color: #666666;
+    
+    &:hover {
+      color: #333333;
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+  
+  .ant-modal-body {
+    padding: 24px;
+  }
+}
+
+// 充值第一步：选择充值金额
+.recharge-step-amount {
+  .balance-display {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: center;
+    border: 1px solid #d6e4ff;
+    
+    .current-balance {
+      .balance-label {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 8px;
+        display: block;
+      }
+      
+      .balance-amount {
+        color: #1890ff;
+        font-size: 32px;
+        font-weight: 700;
+        font-family: 'SimHei', 'Microsoft YaHei', sans-serif;
+      }
+    }
+  }
+  
+  .amount-selection {
+    margin-bottom: 24px;
+    
+    .section-title {
+      color: #333;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: block;
+    }
+    
+    .amount-tags {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      
+      .amount-tag {
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #e8e8e8;
+        background: #ffffff;
+        color: #666;
+        
+        &:hover {
+          border-color: #1890ff;
+          color: #1890ff;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
+        }
+        
+        &.selected {
+          border-color: #1890ff;
+          background: #1890ff;
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+        }
+      }
+    }
+    
+    .custom-amount {
+      .ant-input-group-addon {
+        background: #f5f5f5;
+        border-color: #d9d9d9;
+        color: #666;
+        font-weight: 500;
+      }
+      
+      // 去掉输入框的上下选择器
+      .ant-input {
+        &::-webkit-outer-spin-button,
+        &::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        
+        &[type=number] {
+          -moz-appearance: textfield;
+        }
+      }
+    }
+  }
+  
+  .recharge-notice {
+    margin-bottom: 24px;
+    
+    .section-title {
+      color: #333;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: block;
+    }
+    
+    .notice-list {
+      background: #fff7e6;
+      border: 1px solid #ffd591;
+      border-radius: 8px;
+      padding: 16px;
+      
+      .notice-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 12px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        .notice-number {
+          color: #fa8c16;
+          font-weight: 600;
+          margin-right: 8px;
+          min-width: 20px;
+        }
+        
+        .notice-text {
+          color: #8c8c8c;
+          font-size: 14px;
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+  
+  .recharge-actions {
+    text-align: center;
+    
+    .ant-btn-primary {
+      background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+      border: none;
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+      
+      &:hover {
+        background: linear-gradient(135deg, #40a9ff 0%, #69c0ff 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+      }
+    }
+  }
+}
+
+// 充值第二步：选择支付方式
+.recharge-step-payment {
+  .payment-summary {
+    background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: center;
+    border: 1px solid #b7eb8f;
+    
+    .payment-amount {
+      .amount-label {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 8px;
+        display: block;
+      }
+      
+      .amount-value {
+        color: #52c41a;
+        font-size: 32px;
+        font-weight: 700;
+        font-family: 'SimHei', 'Microsoft YaHei', sans-serif;
+      }
+    }
+  }
+  
+  .payment-methods {
+    margin-bottom: 24px;
+    
+    .section-title {
+      color: #333;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: block;
+    }
+    
+    .method-options {
+      .method-option {
+        background: #ffffff;
+        border: 2px solid #e8e8e8;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          border-color: #1890ff;
+          box-shadow: 0 4px 12px rgba(24, 144, 255, 0.1);
+        }
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        .ant-radio-wrapper {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          
+          .ant-radio {
+            margin-right: 16px;
+          }
+          
+          .method-icon {
+            font-size: 24px;
+            margin-right: 12px;
+            
+            &.alipay {
+              color: #1890ff;
+            }
+            
+            &.wechat {
+              color: #52c41a;
+            }
+          }
+          
+          .method-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+          }
+        }
+      }
+    }
+  }
+  
+  .payment-actions {
+    text-align: center;
+    
+    .ant-btn-primary {
+      border: none;
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+      }
+    }
+  }
+}
