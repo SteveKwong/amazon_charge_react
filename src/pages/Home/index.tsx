@@ -3,6 +3,7 @@ import {Avatar, Button, Dropdown, Layout, Menu, Space, Typography} from "antd";
 import { ClockCircleOutlined, AppstoreOutlined, NotificationOutlined, ShoppingOutlined, BarChartOutlined, UserOutlined, FileTextOutlined, ProfileOutlined, CreditCardOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import RightActionBar from "@/components/RightActionBar";
+import VipTag from "@/components/VipTag";
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import companyIcon from "@/components/icon.png";
 import { getRequest } from "@/components/network/api";
@@ -13,6 +14,7 @@ const { Header, Sider, Content } = Layout;
 interface UserInfo {
     nickname: string;
     icon_url: string;
+    member?: boolean; // 会员状态字段，对应接口返回的member
 }
 
 const HomeLayout: React.FC = () => {
@@ -67,7 +69,7 @@ const HomeLayout: React.FC = () => {
                     console.log('头像URL是否有效:', isValidUrl, userData.icon_url);
                 }
                 
-                setUserInfo(userData);
+                setUserInfo(userData); // 直接使用接口返回的数据，包含member字段
             }
         } catch (error) {
             console.error('获取用户信息失败:', error);
@@ -227,9 +229,17 @@ const HomeLayout: React.FC = () => {
                 />
             </Sider>
             <Layout>
-                <Header style={{background: '#fff', padding: '0 16px', borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                <Header style={{
+                    background: '#fff', 
+                    padding: '0 16px', 
+                    borderBottom: '1px solid #e5e5e5', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    minHeight: '64px'
+                }}>
                     <Typography.Text style={{fontSize: 16, fontWeight: 600}}/>
-                    <Space size={12}>
+                    <Space size={16}>
                         <Button
                             icon={<ClockCircleOutlined />}
                             type="default"
@@ -243,42 +253,74 @@ const HomeLayout: React.FC = () => {
                         >
                             {nowText}
                         </Button>
-                        <Dropdown
-                            menu={{
-                                items: [
-                                    { key: 'settings', label: '设置' },
-                                    { type: 'divider' as const },
-                                    { key: 'logout', label: '退出登录' },
-                                ],
-                                onClick: (info) => {
-                                    if (info.key === 'settings') {
-                                        navigate('/home/settings');
-                                    }
-                                    if (info.key === 'logout') {
-                                        try { localStorage.removeItem('token'); } catch {}
-                                        navigate('/login', { replace: true });
-                                    }
-                                },
+                        
+                        <div 
+                            style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                alignItems: 'center', 
+                                gap: '6px',
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                background: 'rgba(248, 249, 250, 0.6)',
+                                border: '1px solid rgba(222, 226, 230, 0.3)',
+                                transition: 'all 0.3s ease',
+                                marginBottom: '4px',
+                                cursor: 'pointer'
                             }}
-                            trigger={["click"]}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(248, 249, 250, 0.9)';
+                                e.currentTarget.style.border = '1px solid rgba(222, 226, 230, 0.6)';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(248, 249, 250, 0.6)';
+                                e.currentTarget.style.border = '1px solid rgba(222, 226, 230, 0.3)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}
                         >
-                            <Space style={{cursor: 'pointer'}}>
-                                <Avatar 
-                                    size={32} 
-                                    src={userInfo?.icon_url}
-                                    style={{backgroundColor: '#1677ff'}}
-                                    onError={() => {
-                                        console.log('头像加载失败，使用默认头像');
-                                        return false;
-                                    }}
-                                >
-                                    {userInfo?.nickname?.charAt(0) || 'U'}
-                                </Avatar>
-                                <Typography.Text>
-                                    {userInfoLoading ? '加载中...' : (userInfo?.nickname || 'Profile')}
-                                </Typography.Text>
-                            </Space>
-                        </Dropdown>
+                            <Dropdown
+                                menu={{
+                                    items: [
+                                        { key: 'settings', label: '设置' },
+                                        { type: 'divider' as const },
+                                        { key: 'logout', label: '退出登录' },
+                                    ],
+                                    onClick: (info) => {
+                                        if (info.key === 'settings') {
+                                            navigate('/home/settings');
+                                        }
+                                        if (info.key === 'logout') {
+                                            try { localStorage.removeItem('token'); } catch {}
+                                            navigate('/login', { replace: true });
+                                        }
+                                    },
+                                }}
+                                trigger={["click"]}
+                            >
+                                <Space style={{cursor: 'pointer'}}>
+                                    <Avatar 
+                                        size={32} 
+                                        src={userInfo?.icon_url}
+                                        style={{backgroundColor: '#1677ff'}}
+                                        onError={() => {
+                                            console.log('头像加载失败，使用默认头像');
+                                            return false;
+                                        }}
+                                    >
+                                        {userInfo?.nickname?.charAt(0) || 'U'}
+                                    </Avatar>
+                                    <Typography.Text style={{ fontSize: '14px', fontWeight: '500' }}>
+                                        {userInfoLoading ? '加载中...' : (userInfo?.nickname || 'Profile')}
+                                    </Typography.Text>
+                                </Space>
+                            </Dropdown>
+                            
+                            {/* PLUS标签放在用户名和头像下方 */}
+                            <VipTag isVip={userInfo?.member || false} />
+                        </div>
                     </Space>
                 </Header>
                 <Content style={{margin: 16, background: '#fff', padding: 16}}>

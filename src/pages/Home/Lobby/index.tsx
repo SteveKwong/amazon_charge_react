@@ -258,28 +258,38 @@ const LobbyPage: React.FC = () => {
             render: (_: any, record: JobTask) => (
                 <Space>
                     <Button 
-                        size="small" 
+                        size="middle" 
                         type="primary" 
                         ghost 
                         onClick={() => navigate(`/home/order-detail/${record.id}`)}
                         style={{
-                            borderRadius: '6px',
-                            border: '1px solid #1890ff',
+                            borderRadius: '8px',
+                            border: '2px solid #1890ff',
                             color: '#1890ff',
-                            fontWeight: 500,
-                            boxShadow: '0 2px 4px rgba(24, 144, 255, 0.1)',
-                            transition: 'all 0.3s ease'
+                            fontWeight: 600,
+                            fontSize: '14px',
+                            height: '36px',
+                            padding: '0 20px',
+                            boxShadow: '0 2px 6px rgba(24, 144, 255, 0.15)',
+                            transition: 'all 0.3s ease',
+                            fontFamily: 'SimHei, "Microsoft YaHei", sans-serif'
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-1px)';
-                            e.currentTarget.style.boxShadow = '0 4px 8px rgba(24, 144, 255, 0.2)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 6px 16px rgba(24, 144, 255, 0.25)';
+                            e.currentTarget.style.background = '#1890ff';
+                            e.currentTarget.style.color = '#ffffff';
+                            e.currentTarget.style.borderColor = '#1890ff';
                         }}
                         onMouseLeave={(e) => {
                             e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(24, 144, 255, 0.1)';
+                            e.currentTarget.style.boxShadow = '0 2px 6px rgba(24, 144, 255, 0.15)';
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = '#1890ff';
+                            e.currentTarget.style.borderColor = '#1890ff';
                         }}
                     >
-                        详细
+                        详情
                     </Button>
                 </Space>
             )
